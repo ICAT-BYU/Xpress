@@ -1,0 +1,57 @@
+
+.xpress-ui-tab-group .form-item {
+  float: left;
+  width: 33%;
+}
+
+.xpress-ui-command-grouptitle {
+  border-bottom: 1px solid;
+  margin-bottom: 1em;
+}
+.xpress-ui-command-grouptitle-title {
+  font-weight: bold;
+}
+.xpress-ui-command-grouptitle-sweep {
+  float: right;
+}
+.xpress-ui-command-group .form-item {
+  float: left;
+  width: 33%;
+  height: 75px;
+}
+
+.xpress-ui-command-field-sweep {
+  text-align: right;
+  margin-top: -2em;
+}
+
+.xpress-ui-command-green,
+.xpress-ui-recommend-yes {
+  color: #007700;
+  background-color: #AAFFAA;
+  font-weight: bold;
+}
+.xpress-ui-command-yellow {
+  color: #777700;
+  background-color: #FFFFAA;
+  font-weight: bold;
+}
+.xpress-ui-command-red,
+.xpress-ui-recommend-no {
+  color: #770000;
+  background-color: #FFAAAA;
+  font-weight: bold;
+}
+
+#content fieldset fieldset {
+  padding-top: 1.5em;
+  margin-bottom: 2em;
+}
+#content fieldset fieldset legend span {
+  margin-top: -.75em;
+  margin-left: 10px;
+  padding: 0px 5px;
+  background: #FFF;
+  display: block;
+}
+

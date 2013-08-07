@@ -1,0 +1,12 @@
+name = Xpress
+description = Provides an extensible structure for building tools that enable direct manipulation of content on a webpage, similar to an HTML5 contenteditable node but extending beyond text editing. Also included is basic functionality for directly editing text content through use of the CKEditor WYSIWYG editor.
+package = User interface
+core = 7.x
+
+configure = admin/config/content/xpress/
+
+dependencies[] = empty_fields
+dependencies[] = entityreference
+dependencies[] = rights_and_permissions
+
+files[] = xpress.module

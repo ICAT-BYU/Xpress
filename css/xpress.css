@@ -1,0 +1,433 @@
+
+
+.xpress-icon-bold { background-image: url(icons/bold.png); }
+.xpress-icon-clipboard-cut { background-image: url(icons/clipboard-cut.png); }
+.xpress-icon-clipboard-copy { background-image: url(icons/clipboard-copy.png); }
+.xpress-icon-clipboard-paste { background-image: url(icons/clipboard-paste.png); }
+.xpress-icon-content-settings { background-image: url(icons/content-settings.png); }
+.xpress-icon-italic { background-image: url(icons/italic.png); }
+.xpress-icon-link { background-image: url(icons/link-fc.png); }
+.xpress-icon-link.xpress-active { background-image: url(icons/link-edit-fc.png); }
+.xpress-icon-link-follow { background-image: url(icons/link-follow-fc.png); }
+.xpress-icon-link-remove { background-image: url(icons/link-remove-fc.png); }
+.xpress-icon-list-bulleted { background-image: url(icons/list-bulleted.png); }
+.xpress-icon-list-indent { background-image: url(icons/list-indent.png); }
+.xpress-icon-list-numbered { background-image: url(icons/list-numbered.png); }
+.xpress-icon-list-outdent { background-image: url(icons/list-outdent.png); }
+.xpress-icon-page-settings { background-image: url(icons/page-settings.png); }
+.xpress-icon-redo { background-image: url(icons/redo.png); }
+.xpress-icon-save { background-image: url(icons/save.png); }
+.xpress-icon-table { background-image: url(icons/table-small.png); }
+.xpress-icon-table-settings { background-image: url(icons/table-settings.png); }
+.xpress-icon-table-caption { background-image: url(icons/table-caption2.png); }
+.xpress-icon-table-cell-merge { background-image: url(icons/table-cell-merge.png); }
+.xpress-icon-table-cell-merge-down { background-image: url(icons/table-cell-merge-down.png); }
+.xpress-icon-table-cell-merge-right { background-image: url(icons/table-cell-merge-right.png); }
+/*.xpress-icon-table-cell-split { background-image: url(icons/table-cell-split.png); }*/
+.xpress-icon-table-column-insert-after { background-image: url(icons/table-column-insert-after.png); }
+.xpress-icon-table-column-insert-before { background-image: url(icons/table-column-insert-before.png); }
+.xpress-icon-table-column-move-left { background-image: url(icons/table-column-move-left.png); }
+.xpress-icon-table-column-move-right { background-image: url(icons/table-column-move-right.png); }
+.xpress-icon-table-column-remove { background-image: url(icons/table-column-remove.png); }
+.xpress-icon-table-heading { background-image: url(icons/table-heading.png); }
+.xpress-icon-table-heading-bottom { background-image: url(icons/table-heading-bottom.png); }
+.xpress-icon-table-heading-left { background-image: url(icons/table-heading-left.png); }
+.xpress-icon-table-heading-right { background-image: url(icons/table-heading-right.png); }
+.xpress-icon-table-heading-top { background-image: url(icons/table-heading-top.png); }
+.xpress-icon-table-row-insert-after { background-image: url(icons/table-row-insert-after.png); }
+.xpress-icon-table-row-insert-before { background-image: url(icons/table-row-insert-before.png); }
+.xpress-icon-table-row-move-down { background-image: url(icons/table-row-move-down.png); }
+.xpress-icon-table-row-move-up { background-image: url(icons/table-row-move-up.png); }
+.xpress-icon-table-row-remove { background-image: url(icons/table-row-remove.png); }
+.xpress-icon-text { background-image: url(icons/text.png); }
+.xpress-icon-underline { background-image: url(icons/underline.png); }
+.xpress-icon-undo { background-image: url(icons/undo.png); }
+
+
+
+
+
+#XpressToolbar {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 500;
+  
+  background: #333333; /* Old browsers */
+	background: -moz-linear-gradient(top,  #333333 0%, #666666 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#333333), color-stop(100%,#666666)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #333333 0%,#666666 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #333333 0%,#666666 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #333333 0%,#666666 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #333333 0%,#666666 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#333333', endColorstr='#666666',GradientType=0 ); /* IE6-9 */
+	-webkit-box-shadow:  0px 0px 5px 0px rgba(0, 0, 0, .5);
+	box-shadow:  0px 0px 5px 0px rgba(0, 0, 0, .5);
+}
+#XpressToolbar > * {
+	display: block;
+	clear: both;
+}
+#XpressToolbar .xpress-title {
+	padding: 0px 5px;
+}
+
+/* LINKS */
+#XpressToolbar a {
+	text-decoration: none;
+	cursor: pointer;
+	float: left;
+	line-height: 25px;
+	display: block;
+	padding: 2px 4px;
+}
+#XpressToolbar a > * {
+	display: block;
+	float: left;
+	border: none;
+}
+
+/* DISABLED */
+#XpressToolbar a.xpress-disabled {
+	cursor: default;
+}
+#XpressToolbar a:not(.xpress-visible).xpress-disabled > * {
+	opacity: .3;
+
+	/* grayscale: http://www.karlhorky.com/2012/06/cross-browser-image-grayscale-with-css.html */
+	filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale"); /* Firefox 10+, Firefox on Android */
+	filter: gray; /* IE6-9 */
+	-webkit-filter: grayscale(100%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+
+
+/* PLACEHOLDER */
+#XpressToolbar .xpress-placeholder,
+#XpressToolbar .xpress-placeholder:hover,
+#XpressToolbar .xpress-placeholder > .xpress-toolbar-tabs > a:first-child,
+#XpressToolbar .xpress-placeholder > .xpress-toolbar-group a:first-child  {
+  display: block !important;
+  visibility: hidden !important;
+}
+
+/* CLEARFIX */
+#XpressToolbar:after,
+#XpressToolbar .xpress-toolbar-group:after, 
+#XpressToolbar .xpress-toolbar-tabs:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+
+
+
+/* GROUPS */
+#XpressToolbar .xpress-toolbar-group {
+	padding: 5px 5px 0px 5px;
+	display: block;
+	clear: both;
+}
+#XpressToolbar .xpress-toolbar-group:last-child {
+	padding-bottom: 5px;
+}
+
+
+
+/* BUTTONSETS */
+#XpressToolbar .xpress-toolbar-buttonset {
+	margin-right: 5px;
+	display: block;
+	float: left;
+}
+#XpressToolbar .xpress-toolbar-buttonset > * {
+  float: left;
+}
+#XpressToolbar .xpress-toolbar-buttonset > a,
+#XpressToolbar .xpress-toolbar-buttonset > a.xpress-disabled:hover {
+	color: #000000;
+	border-top: 2px solid #333;
+	border-bottom: 2px solid #333;
+
+	background: rgb(255,255,255); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(221,221,221,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(221,221,221,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(221,221,221,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(221,221,221,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(221,221,221,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(221,221,221,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#dddddd',GradientType=0 ); /* IE6-9 */
+}
+#XpressToolbar .xpress-toolbar-buttonset a:first-child {
+	-webkit-border-radius: 5px 0 0 5px;
+	border-radius: 5px 0 0 5px;
+	border-left: 2px solid #333;
+}
+#XpressToolbar .xpress-toolbar-buttonset a:last-child {
+	-webkit-border-radius: 0 5px 5px 0;
+	border-radius: 0 5px 5px 0;
+	border-right: 2px solid #333;
+}
+#XpressToolbar .xpress-toolbar-buttonset a:first-child:last-child {
+	-webkit-border-radius: 5px 5px 5px 5px;
+	border-radius: 5px 5px 5px 5px;
+	border: 2px solid #333;
+}
+#XpressToolbar .xpress-toolbar-buttonset a:hover {
+	background: rgb(239,239,239); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(239,239,239,1) 0%, rgba(206,206,206,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(239,239,239,1)), color-stop(100%,rgba(206,206,206,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(239,239,239,1) 0%,rgba(206,206,206,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(239,239,239,1) 0%,rgba(206,206,206,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(239,239,239,1) 0%,rgba(206,206,206,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(239,239,239,1) 0%,rgba(206,206,206,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#cecece',GradientType=0 ); /* IE6-9 */
+}
+#XpressToolbar .xpress-toolbar-buttonset a.xpress-active {
+	-webkit-box-shadow: inset 0px 0px 5px 2px rgba(0, 0, 0, .5);
+	box-shadow: inset 0px 0px 5px 2px rgba(0, 0, 0, .5);
+
+	background: rgb(150,150,150); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(150,150,150,1) 0%, rgba(206,206,206,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(150,150,150,1)), color-stop(100%,rgba(206,206,206,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#969696', endColorstr='#cecece',GradientType=0 ); /* IE6-9 */
+}
+#XpressToolbar .xpress-toolbar-buttonset .xpress-toolbar-spacer {
+	border-top: 2px solid #333;
+	border-bottom: 2px solid #333;
+	display: block;
+	width: 1px;
+	height: 25px;
+	padding: 2px 0px;
+	float: left;
+
+	background: #eeeeee; /* Old browsers */
+	background: -moz-linear-gradient(top,  #eeeeee 0%, #cccccc 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#cccccc)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #eeeeee 0%,#cccccc 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #eeeeee 0%,#cccccc 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #eeeeee 0%,#cccccc 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #eeeeee 0%,#cccccc 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
+
+}
+
+
+
+/* TABS */
+#XpressToolbar .xpress-toolbar-tabs {
+	padding: 5px 5px 0px 5px;
+	border-bottom: 2px solid #333;
+}
+#XpressToolbar .xpress-toolbar-tabs > a {
+	-webkit-border-radius: 5px 5px 0px 0px;
+	border-radius: 5px 5px 0px 0px;
+	border: 2px solid transparent;
+	border-bottom: none;
+	color: #EEE;
+	margin-bottom: -2px;
+	margin-right: 2px;
+}
+#XpressToolbar .xpress-toolbar-tabs > a:hover {
+	color: #000;
+	padding-bottom: 0px;
+	border-color: #333;
+	border-bottom: 2px solid #000;
+
+	background: #eeeeee; /* Old browsers */
+	background: -moz-linear-gradient(top,  #eeeeee 0%, #dddddd 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#dddddd)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #eeeeee 0%,#dddddd 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #eeeeee 0%,#dddddd 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #eeeeee 0%,#dddddd 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #eeeeee 0%,#dddddd 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#dddddd',GradientType=0 ); /* IE6-9 */
+
+}
+#XpressToolbar .xpress-toolbar-tabs > a > span {
+  display: block;
+  padding-right: 5px;
+}
+#XpressToolbar .xpress-toolbar-tabs a.xpress-active,
+#XpressToolbar .xpress-toolbar-tabs a.xpress-active:hover {
+	color: #000;
+	border-color: #333;
+	padding-bottom: 2px;
+	border-bottom: 0px transparent;
+
+	background: #F6F6F6;
+	background: #ffffff; /* Old browsers */
+	background: -moz-linear-gradient(top,  #ffffff 0%, #eeeeee 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#eeeeee)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #ffffff 0%,#eeeeee 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #ffffff 0%,#eeeeee 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #ffffff 0%,#eeeeee 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #ffffff 0%,#eeeeee 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#eeeeee',GradientType=0 ); /* IE6-9 */
+}
+#XpressToolbar .xpress-toolbar-tabs a.xpress-disabled,
+#XpressToolbar .xpress-toolbar-tabs a.xpress-disabled:hover {
+  display: none;
+}
+#XpressToolbar .xpress-toolbar-tabs > a.xpress-disabled.xpress-visible {
+  display: block;
+  color: #FFF;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  margin-bottom: -4px;
+  
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)"; /* IE 8 */
+  filter: alpha(opacity=50); /* IE 5-7 */
+  -moz-opacity: 0.5; /* Netscape */
+  -khtml-opacity: 0.5; /* Safari 1.x */
+  opacity: 0.5;
+}
+
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group {
+	padding: 0px 5px;
+	border-bottom: 1px solid #999;
+
+	background: #eeeeee; /* Old browsers */
+	background: -moz-linear-gradient(top,  #eeeeee 0%, #dddddd 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#dddddd)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #eeeeee 0%,#dddddd 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #eeeeee 0%,#dddddd 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #eeeeee 0%,#dddddd 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #eeeeee 0%,#dddddd 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#dddddd',GradientType=0 ); /* IE6-9 */
+}
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group .xpress-toolbar-buttonset {
+	margin-right: 0px;
+	border-right: 1px solid #CCC;
+}
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group .xpress-toolbar-buttonset:last-child {
+	border-right: none;
+}
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group > .xpress-toolbar-buttonset > a,
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group > .xpress-toolbar-buttonset > a.xpress-disabled:hover{
+	-webkit-border-radius: 0;
+	border-radius: 0;
+	border: none;
+	background: transparent;
+}
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group > .xpress-toolbar-buttonset > a:hover {
+	background: rgb(223,223,223); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(223,223,223,1) 0%, rgba(207,207,207,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(223,223,223,1)), color-stop(100%,rgba(207,207,207,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(223,223,223,1) 0%,rgba(207,207,207,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(223,223,223,1) 0%,rgba(207,207,207,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(223,223,223,1) 0%,rgba(207,207,207,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(223,223,223,1) 0%,rgba(207,207,207,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dfdfdf', endColorstr='#cfcfcf',GradientType=0 ); /* IE6-9 */
+}
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group > .xpress-toolbar-buttonset > a.xpress-active {
+	background: rgb(150,150,150); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(150,150,150,1) 0%, rgba(206,206,206,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(150,150,150,1)), color-stop(100%,rgba(206,206,206,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(150,150,150,1) 0%,rgba(206,206,206,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#969696', endColorstr='#cecece',GradientType=0 ); /* IE6-9 */
+}
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group > .xpress-toolbar-buttonset > a.xpress-inaccessible {
+  display: none;
+}
+
+#XpressToolbar .xpress-toolbar-tab-group .xpress-toolbar-group .xpress-toolbar-buttonset .xpress-toolbar-spacer {
+	display: none;
+}
+
+/* DISPLAY TITLE/ICON */
+#XpressToolbar .xpress-icon > .xpress-button-title {
+	display: none;
+}
+#XpressToolbar .xpress-text > img {
+	display: none;
+}
+
+
+
+#XpressBreadcrumbs {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  height: 25px;
+  border-top: 1px solid #333;
+  
+  background: rgb(102,102,102); /* Old browsers */
+  background: -moz-linear-gradient(top,  rgba(102,102,102,1) 0%, rgba(51,51,51,1) 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(102,102,102,1)), color-stop(100%,rgba(51,51,51,1))); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  rgba(102,102,102,1) 0%,rgba(51,51,51,1) 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  rgba(102,102,102,1) 0%,rgba(51,51,51,1) 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  rgba(102,102,102,1) 0%,rgba(51,51,51,1) 100%); /* IE10+ */
+  background: linear-gradient(to bottom,  rgba(102,102,102,1) 0%,rgba(51,51,51,1) 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#666666', endColorstr='#333333',GradientType=0 ); /* IE6-9 */
+}
+#XpressBreadcrumbs a {
+  float: left;
+  display: block;
+  line-height: 25px;
+  font-size: 85%;
+  padding: 0px 10px;
+  text-decoration: none;
+  border-right: 1px solid #333;
+  color: #CCC;
+}
+#XpressBreadcrumbs a.xpress-active {
+  color: #FFF;
+  background: rgb(136,136,136); /* Old browsers */
+  background: -moz-linear-gradient(top,  rgba(136,136,136,1) 0%, rgba(85,85,85,1) 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(136,136,136,1)), color-stop(100%,rgba(85,85,85,1))); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  rgba(136,136,136,1) 0%,rgba(85,85,85,1) 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  rgba(136,136,136,1) 0%,rgba(85,85,85,1) 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  rgba(136,136,136,1) 0%,rgba(85,85,85,1) 100%); /* IE10+ */
+  background: linear-gradient(to bottom,  rgba(136,136,136,1) 0%,rgba(85,85,85,1) 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#888888', endColorstr='#555555',GradientType=0 ); /* IE6-9 */
+}
+
+
+
+
+/* XPRESS UI FOR FIELD SELECTION */
+.xpress-context-active {
+  outline: 3px solid #007700;
+}
+.xpress-context-hover {
+  outline: 3px solid #FADB61;
+}
+.xpress-context-placeholder {
+  outline: 1px solid #FADB61;
+  background: #FAF1CE;
+  display: block;
+  padding: 5px 10px 5px 35px;
+  background-image: url(../icons/content-insert.png);
+  background-repeat: no-repeat;
+  background-position: 5px center;
+	color: black;
+	margin-bottom: 20px;
+}
+.xpress-context-placeholder:hover {
+  
+  outline: 3px solid #FADB61;
+  text-decoration: none;
+}
+
+
+
+
+/* TIPSY OVERWRITE */
+.tipsy {
+	font-family: Verdana, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 12px;
+}

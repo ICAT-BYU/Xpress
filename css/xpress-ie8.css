@@ -1,0 +1,7 @@
+.topbar a {
+	border-radius: 0 !important;
+}
+.topbar-tab-group .topbar-section,
+.topbar-tab-group .topbar-group > a {
+	filter: none !important;
+}

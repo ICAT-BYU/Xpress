@@ -1,0 +1,144 @@
+<?php
+
+/**
+ * Implements hook_install()
+ * 
+ * Modify the weight of the xpress module. This is necissary due to a
+ * bug in some versions of Drupal 7. See: http://drupal.org/node/1940986
+ */
+function xpress_install() {
+    db_update('system')->fields(array(
+        'weight' => 1
+    ))->condition('name', 'xpress', '=')->execute();
+}
+
+/**
+ * Implements hook_schema().
+ * Defines the database configuration.
+ * 
+ * @return array 
+ */
+function xpress_schema() {
+    
+    $schema['xpress_field_tabs'] = array(
+        'description' => 'Defines the preferred tabs for each field.',
+        'fields' => array(
+            'entity' => array(
+                'description' => 'c',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'bundle' => array(
+                'description' => 'The name of the bundle containing the field.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'field' => array(
+                'description' => 'The name of the field.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'tab' => array(
+                'description' => 'The identifier for the tab.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            )
+        ),
+        'indexes' => array(
+            'field' => array(
+                'entity',
+                'bundle',
+                'field'
+            )
+        )
+    );
+    
+    $schema['xpress_field_scope'] = array(
+        'description' => 'Limits the selection scope of inline content editing to the specified selector',
+        'fields' => array(
+            'entity' => array(
+                'description' => 'The name of the entity containing the bundle.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'bundle' => array(
+                'description' => 'The name of the bundle containing the field.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'field' => array(
+                'description' => 'The name of the field.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'scope' => array(
+                'description' => 'The selection scope selector for the field.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            )
+        ),
+        'indexes' => array(
+            'field' => array(
+                'entity',
+                'bundle',
+                'field'
+            )
+        )
+    );
+    
+    $schema['xpress_field_commands'] = array(
+        'description' => 'Contains which commands are enabled for each field in each bundle.',
+        'fields' => array(
+            'entity' => array(
+                'description' => 'The name of the entity containing the bundle.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'bundle' => array(
+                'description' => 'The name of the bundle containing the field.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'field' => array(
+                'description' => 'The name of the field.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            ),
+            'command' => array(
+                'description' => 'The enabled command.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE
+            )
+        ),
+        'indexes' => array(
+            'field' => array(
+                'entity',
+                'bundle',
+                'field'
+            ),
+            'command' => array(
+                'command'
+            )
+        )
+    );
+    
+    return $schema;
+}
+
+function xpress_uninstall() {
+    variable_del('xpress_themes');
+}
+
+?>

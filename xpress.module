@@ -1,0 +1,1831 @@
+<?php
+
+/**
+ * Implements hook_permissions()
+ * Adds a permission which users must have to enable xpress editing.
+ */
+function xpress_permission() {
+    return array(
+        'xpress editor' => array(
+            'title' => t('Xpress editor'),
+            'description' => t('Enable inline editing of content via Xpress.')
+        ),
+        'xpress command' => array(
+            'title' => t('Manage Xpress settings'),
+            'description' => t('Grants access for changing settings for each field within each content type.')
+        ),
+        'xpress theme' => array(
+            'title' => t('Manage Xpress themes'),
+            'description' => t('Manage which themes will have Xpress capabilities.')
+        )
+    );
+}
+
+/**
+ * Implements hook_help()
+ */
+function xpress_help($path, $arg) {
+    switch ($path) {
+        case 'admin/help#xpress':
+            return '<p>' . t('<a href="@docs">Xpress Documentation</a>', @array(
+                '@docs' => url('admin/xpress/docs/home')
+            )) . '</p>';
+    }
+}
+
+/**
+ * Implements hook_menu()
+ * Menu items added for AJAX calls.
+ * @return array
+ */
+function xpress_menu() {
+    $path = drupal_get_path('module', 'xpress');
+    
+    //for managing which commands are accessible to which fields
+    $items['admin/structure/types/manage/%/xpress'] = array(
+        'title' => 'Xpress',
+        'description' => 'Manage which Xpress settings per field',
+        'page callback' => 'xpress_bundle_field_commands',
+        'page arguments' => array(
+            4
+        ),
+        'access callback' => 'user_access',
+        'access arguments' => array(
+            'xpress command'
+        ),
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'xpress.fields.inc',
+        'weight' => 15
+    );
+    
+    //for managing which themes use Xpress
+    $items['admin/config/content/xpress']       = array(
+        'title' => 'Xpress themes',
+        'description' => 'Manage which themes will implement Xpress',
+        'page callback' => 'xpress_theme_management',
+        'page arguments' => array(),
+        'access arguments' => array(
+            'xpress theme'
+        ),
+        'file' => 'xpress.theme.inc'
+    );
+    $items['admin/config/content/xpress/theme'] = array(
+        'page callback' => 'xpress_theme_management',
+        'page arguments' => array(),
+        'access arguments' => array(
+            'xpress theme'
+        ),
+        'type' => MENU_CALLBACK,
+        'file' => 'xpress.theme.inc'
+    );
+    
+    //documentation pages
+    $items['admin/xpress/docs/%'] = array(
+        'title' => 'Xpress Documentation',
+        'description' => 'Documentation on how to use Xpress and how to extend Xpress functionality',
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+        'page callback' => 'xpress_documentation',
+        'page arguments' => array(
+            3
+        ),
+        'file' => 'xpress.documentation.inc'
+    );
+    
+    //for AJAX callbacks
+    $items['admin/xpress/ajax/%'] = array(
+        'page callback' => 'xpress_ajax',
+        'page arguments' => array(
+            3
+        ),
+        'access callback' => TRUE, //access rights handled in page callback
+        'type' => MENU_CALLBACK
+    );
+    
+    //for AJAX saving
+    $items['admin/content/xpress/ajax_update'] = array(
+        'page callback' => 'xpress_ajax_update',
+        'page arguments' => array(
+            4
+        ),
+        'access callback' => TRUE, //access rights handled in page callback
+        'type' => MENU_CALLBACK
+    );
+    
+    //for AJAX loading
+    $items['admin/content/xpress/ajax_load/%'] = array(
+        'page callback' => 'xpress_ajax_load',
+        'page arguments' => array(
+            4
+        ),
+        'access callback' => 'user_access',
+        'access arguments' => array(
+            'access content'
+        ),
+        'type' => MENU_CALLBACK
+    );
+    
+    return $items;
+}
+
+/**
+ * Implements hook_preprocess_page()
+ * Invokes hook_xpress() in other modules to build the Xpress toolbar render array.
+ */
+function xpress_preprocess_page(&$vars, $hook) {
+    
+    //if editor access and Xpress theme then configure
+    if (isset($vars['node']) && Xpress::editor_enabled($vars['node'])) {
+        
+        ////////////////////////////////////
+        //  XPRESS PAGE TITLE ATTRIBUTES
+        ////////////////////////////////////
+        
+        $node_ref  = 'xpress-ref-node-' . $vars['node']->nid;
+        $title_ref = $node_ref . '-title';
+        
+        //build attributes for title
+        $attr = array(
+            'id' => (int) $vars['node']->nid,
+            'entity' => 'node',
+            'bundle' => $vars['node']->type,
+            'title' => $vars['node']->title,
+            'page' => TRUE,
+            'field_name' => 'title',
+            'field_label' => Xpress::getBundleTitleLabel($vars['node']->type),
+            'field_data_type' => 'text',
+            'field_settings' => NULL,
+            'field_item_selector' => 'h1',
+            'language' => $vars['node']->language,
+            'view_mode' => 'full',
+            'commands' => Xpress::getFieldCommands($vars['node']->type, 'title'),
+            'max' => 1,
+            'min' => 1,
+            'node_ref' => $node_ref,
+            'field_ref' => $title_ref,
+            'page_title' => true,
+            'item_ref' => $title_ref . '-0',
+            'delta' => 0,
+            'scope' => xpress_field_scope('node', $vars['node']->type, 'title'),
+            'preferred_tabs' => xpress_field_preferred_tabs('node', $vars['node']->type, 'title'),
+            'access' => xpress_get_permissions($vars['node'])
+        );
+        
+        //because the title attributes are not used when the node is loaded as the
+        //page, title prefix and suffix is used instead to create consistincy when
+        //manage xpress data
+        $vars['title_prefix']['xpress'] = array(
+            '#markup' => "<div class='xpress-field xpress-node-title " . $title_ref . "' data-xpress='" . json_encode($attr) . "'>"
+        );
+        $vars['title_suffix']['xpress'] = array(
+            '#markup' => '</div>'
+        );
+    }
+    
+    //////////////////////////
+    //  CONTENT TYPES PAGE  //
+    //////////////////////////
+    //if content types page then add operation to table
+    if (current_path() == 'admin/structure/types') {
+        //increase the colspan of the 'operation' header cell
+        $vars['page']['content']['system_main']['node_table']['#header'][1]['colspan']++;
+        
+        //add a new operation for each bundle row
+        $rows =& $vars['page']['content']['system_main']['node_table']['#rows'];
+        for ($i = 0; $i < count($rows); $i++) {
+            
+            //use the machine name information to determine the bundle type
+            $html    = $rows[$i][0];
+            $pattern = '/Machine name: (.*?)\)/';
+            preg_match($pattern, $html, $matches);
+            
+            //add a column to each row containing a link to the page
+            if (isset($matches[1])) {
+                array_splice($rows[$i], 4, 0, array(
+                    'data' => l('xpress', 'admin/structure/types/manage/' . $matches[1] . '/xpress')
+                ));
+            }
+            
+        }
+    }
+}
+
+
+/**
+ * Implements hook_process_page()
+ * 1. Takes the render array for Xpress toolbar and converts it into a usable JavaScript
+ * structure which is then stored in JavaScript at Drupal.settings.xpress.
+ * 2. Stores the path to the ckeditor module.
+ * 3. Adds Xpress JavaScript definition files.
+ */
+function xpress_process_page($vars, $hook) {
+    
+    //enabled if access and Xpress theme or sub-theme
+    if (!isset($vars['node']) || !Xpress::editor_enabled($vars['node']))
+        return;
+    
+    //define and assign anonymous function
+    //sorts associative array by weight
+    $sort_by_weight = function($items) {
+        //initialize variables
+        $low     = NULL;
+        $high    = NULL;
+        $data    = array();
+        $indexes = array();
+        $results = array();
+        
+        //organize items by weight into a new indexed array
+        foreach ($items as $key => $item) {
+            //get weight of item
+            $weight = array_key_exists('weight', $item) ? (int) $item['weight'] : 0;
+            if (is_nan($weight))
+                $weight = 0;
+            $weight = round($weight);
+            
+            //store item in correct weight array
+            if (!isset($data[$weight]))
+                $data[$weight] = array();
+            $data[$weight][$key] = $item;
+            
+            //update low and high and indexes
+            if ($low === NULL || $low > $weight)
+                $low = $weight;
+            if ($high === NULL || $high < $weight)
+                $high = $weight;
+            if (!in_array($weight, $indexes))
+                $indexes[] = $weight;
+        }
+        
+        //sort the indexes array
+        sort($indexes, SORT_NUMERIC);
+        
+        //build the results array
+        for ($i = 0; $i < count($indexes); $i++) {
+            foreach ($data[$indexes[$i]] as $key => $value) {
+                //alter the value (remove command enabled since it wont be in use by JavaScript)
+                unset($value['command enabled']);
+                
+                //store the value
+                $results[$key] = $value;
+            }
+        }
+        
+        //return results
+        return $results;
+    };
+    
+    //define and assign anonymous function
+    //turns associative array into indexed array
+    $assoc_to_indexed = function($array, $store_key = false) {
+        $results = array();
+        foreach ($array as $key => $value) {
+            if ($store_key)
+                $value['key'] = $key;
+            $results[] = $value;
+        }
+        return $results;
+    };
+    
+    
+    //add drupal AJAX libraries
+    drupal_add_js('/misc/jquery.form.js');
+    drupal_add_library('system', 'drupal.ajax');
+    
+    //add xpress libraries
+    $path = drupal_get_path('module', 'xpress');
+    drupal_add_js($path . '/js/ckeditor/ckeditor.js');
+    drupal_add_js($path . '/js/jquery.tipsy.js');
+    drupal_add_js($path . '/js/xpress.js');
+    drupal_add_css($path . '/css/tipsy.css');
+    drupal_add_css($path . '/css/xpress.css');
+    
+    
+    ////////////////////////////////
+    // load extra JavaScript files
+    ////////////////////////////////
+    
+    foreach (module_invoke_all('xpress_javascript') as $jsfile) {
+        drupal_add_js($jsfile);
+    }
+    
+    //load ckeditor plugin files and store plugin names
+    foreach (module_invoke_all('xpress_ckplugin') as $plugin_name => $plugin) {
+        $ckplugins[] = $plugin_name;
+        drupal_add_js($plugin['path']);
+    }
+    
+    
+    ////////////////////////////////
+    // load field independent commands
+    ////////////////////////////////
+    $commands = Xpress::getCommands();
+    foreach ($commands as $command => $config) {
+        if (!$config['field specific'])
+            $field_independent_commands[] = $command;
+    }
+    
+    
+    ////////////////////////////////
+    // load toolbar structurs
+    ////////////////////////////////
+    $xpress = xpress_get_toolbar(true);
+    
+    //organize quicklink groups by weight as well as group sub-items
+    $xpress['quicklinks'] = $sort_by_weight($xpress['quicklinks']);
+    foreach ($xpress['quicklinks'] as $key => $group) {
+        if (isset($group['items']) && is_array($group['items'])) {
+            $xpress['quicklinks'][$key]['items'] = $sort_by_weight($group['items']);
+        } else {
+            unset($xpress['quicklinks'][$key]);
+        }
+    }
+    
+    //organize tab groups by weight as well as group sub-items
+    $xpress['tabs'] = $sort_by_weight($xpress['tabs']);
+    foreach ($xpress['tabs'] as $key => $group) {
+        if (isset($group['items']) && is_array($group['items'])) {
+            $xpress['tabs'][$key]['items'] = $sort_by_weight($group['items']);
+            
+        } else {
+            unset($xpress['tabs'][$key]);
+        }
+    }
+    
+    //convert associative arrays into indexed arrays (otherwise order is lost when
+    //storing into JavaScript variable.
+    $xpress['quicklinks'] = $assoc_to_indexed($xpress['quicklinks']);
+    for ($i = 0; $i < count($xpress['quicklinks']); $i++) {
+        $xpress['quicklinks'][$i]['items'] = $assoc_to_indexed($xpress['quicklinks'][$i]['items']);
+    }
+    $xpress['tabs'] = $assoc_to_indexed($xpress['tabs'], true);
+    for ($i = 0; $i < count($xpress['tabs']); $i++) {
+        $xpress['tabs'][$i]['items'] = $assoc_to_indexed($xpress['tabs'][$i]['items']);
+    }
+    
+    
+    ////////////////////////////////
+    // store xpress settings into a JavaScript variable
+    ////////////////////////////////
+    drupal_add_js(array(
+        'xpress' => array(
+            'toolbar' => $xpress,
+            'ckeditor' => drupal_get_path('module', 'ckeditor'),
+            'ckplugins' => $ckplugins,
+            'commands' => $field_independent_commands
+        )
+    ), array(
+        'type' => 'setting'
+    ));
+    
+    
+}
+
+/**
+ * Implements hook_preprocess_node()
+ * Adds classes and attributes to fields that will be used by xpress JavaScrpt
+ * to enable editability of content.
+ * 
+ * If the user has access to make any changes then load Drupal's AJAX libraries.
+ */
+function xpress_preprocess_node(&$variables, $hook) {
+    //load the node object
+    $node = node_load($variables['nid']);
+    
+    if ($variables['page'] == TRUE) {
+        drupal_add_js('var pagenodeid = ' . $variables['nid'] . ';', 'inline', -100);
+    }
+    
+    //if access and xpress theme and not page node then configure
+    if (!$variables['page'] && Xpress::editor_enabled($node)) {
+        $node_ref  = 'xpress-ref-node-' . $variables['nid'];
+        $title_ref = $node_ref . '-title';
+        
+        //add xpress classes (including reference class) to the node render array
+        $variables['classes_array'][] = 'xpress-node';
+        $variables['classes_array'][] = $node_ref;
+        
+        //build attributes for title
+        $attr = array(
+            'id' => (int) $variables['nid'],
+            'entity' => 'node',
+            'bundle' => $variables['type'],
+            'title' => $variables['title'],
+            'page' => FALSE,
+            'field_name' => 'title',
+            'field_label' => Xpress::getBundleTitleLabel($variables['type']),
+            'field_data_type' => 'text',
+            'field_settings' => NULL,
+            'field_item_selector' => 'h2',
+            'language' => $variables['language'],
+            'view_mode' => $variables['view_mode'],
+            'commands' => Xpress::getFieldCommands($variables['type'], 'title'),
+            'max' => 1,
+            'min' => 1,
+            'node_ref' => $node_ref,
+            'field_ref' => $title_ref,
+            'item_ref' => $title_ref . '-0',
+            'delta' => 0,
+            'scope' => xpress_field_scope('node', $variables['type'], 'title'),
+            'preferred_tabs' => xpress_field_preferred_tabs('node', $variables['type'], 'title'),
+            'access' => xpress_get_permissions($node)
+        );
+        
+        //add xpress class to title
+        $variables['title_attributes_array']['class'][] = 'xpress-node-title-title';
+        
+        //because the title attributes are not used when the node is loaded as the
+        //page, title prefix and suffix is used instead to create consistincy when
+        //manage xpress data
+        $variables['title_prefix']['xpress'] = array(
+            '#markup' => "<div class='xpress-field xpress-node-title " . $title_ref . "' data-xpress='" . json_encode($attr) . "'>"
+        );
+        $variables['title_suffix']['xpress'] = array(
+            '#markup' => '</div>'
+        );
+    }
+}
+
+/**
+ * Implements hook_preprocess_field()
+ * 
+ * Adds classes and attributes to fields that will be used by xpress JavaScrpt
+ * to enable editability of content. A field does not include the node title as
+ * that is part of the Node structure (not the field structure) so the node title
+ * is given attributes and classes using hook_preprocess_node and hook_preprocess_page.
+ */
+function xpress_preprocess_field(&$variables, $hook) {
+    
+    //store a reference to the field Node
+    $o = $variables['element']['#object'];
+    
+    //if access and xpress theme then configure
+    if (Xpress::editor_enabled($o)) {
+        
+        //set up some variables
+        $el = $variables['element'];
+        
+        // ICAT change
+        // The author didn't check to make sure these variables were set.
+        $language = '';
+        if (isset($el['#language'])) {
+            $language = $el['#language'];
+        }
+        $view_mode = '';
+        if (isset($el['#view_mode'])) {
+            $view_mode = $el['#view_mode'];
+        }
+        
+        
+        $entity_name = $el['#entity_type'];
+        $field_name  = $el['#field_name'];
+        $langcode    = isset($el['#language']) ? $el['#language'] : 'und';
+        $node_ref    = 'xpress-ref-node-' . $o->nid;
+        $field_ref   = $node_ref . '-' . $field_name . '-' . $langcode;
+        
+        //if field is part of node entity type then add attributes to the field
+        if ($el['#entity_type'] == 'node') {
+            
+            //add classes to the field
+            $variables['classes_array'][] = 'xpress-field';
+            $variables['classes_array'][] = $field_ref;
+            
+            //get settings, max, and min for field
+            $about = Xpress::getBundleFieldAttributes($o->type, $field_name);
+            
+            //build field attributes
+            $attr = array(
+                'id' => (int) $o->nid,
+                'entity' => $entity_name,
+                'bundle' => $o->type,
+                'title' => false,
+                'page' => false,
+                'field_name' => $field_name,
+                'field_label' => $el['#title'],
+                'field_data_type' => $el['#field_type'],
+                'field_settings' => $about['settings'],
+                'field_item_selector' => '.field-item',
+                'language' => $language,
+                'view_mode' => $view_mode,
+                'commands' => Xpress::getFieldCommands($o->type, $field_name),
+                'max' => (int) $about['max'],
+                'min' => (int) $about['min'],
+                'node_ref' => $node_ref,
+                'field_ref' => $field_ref,
+                'scope' => xpress_field_scope($el['#entity_type'], $o->type, $field_name),
+                'preferred_tabs' => xpress_field_preferred_tabs($entity_name, $o->type, $field_name),
+                'access' => xpress_get_permissions($o)
+            );
+            
+            //store xpress field attributes
+            $variables['attributes_array']['data-xpress'] = json_encode($attr);
+            
+            //store item specific attributes
+            foreach ($variables['items'] as $delta => $item) {
+                //build field item attributes
+                $item_attr = array(
+                    'id' => (int) $o->nid,
+                    'node_ref' => $node_ref,
+                    'field_ref' => $field_ref,
+                    'item_ref' => $field_ref . '-' . $delta,
+                    'delta' => $delta
+                );
+                
+                $variables['item_attributes_array'][$delta]['data-xpress'] = json_encode($item_attr);
+            }
+        }
+    }
+    //kpr($variables);
+}
+
+/**
+ * Implements hook_empty_fields().
+ */
+function xpress_empty_fields() {
+    return array(
+        'XpressPlaceholder' => array(
+            'title' => t('Use Xpress placeholder')
+        )
+    );
+}
+
+/**
+ * Implements hook_xpress_javascripts()
+ */
+function xpress_xpress_javascript() {
+    return array(
+        '/' . drupal_get_path('module', 'xpress') . '/js/definitions.js'
+    );
+}
+
+/**
+ * Implements hook_xpress_ckplugins()
+ */
+function xpress_xpress_ckplugin() {
+    $jspath = '/' . drupal_get_path('module', 'xpress') . '/js/';
+    return array(
+        'listdentation' => array(
+            'name' => 'listdentation',
+            'desc' => t('Plugin for advanced list indent and outdent commands.'),
+            'path' => $jspath . 'ckeditor.listdentation.js'
+        ),
+        'linkfollow' => array(
+            'name' => 'linkfollow',
+            'desc' => t('Plugin for creating a command to follow a link within the editor.'),
+            'path' => $jspath . 'ckeditor.linkfollow.js'
+        )
+    );
+}
+
+/**
+ * Implements hook_xpress_toolbar()
+ */
+function xpress_xpress_toolbar() {
+    $path  = '/' . drupal_get_path('module', 'xpress') . '/icons/';
+    $types = array(
+        'number' => array(
+            'number_integer',
+            'number_decimal',
+            'number_float'
+        ),
+        'text' => array(
+            'text',
+            'text_long',
+            'text_with_summary'
+        ),
+        'text2' => array(
+            'text_long',
+            'text_with_summary'
+        ),
+        'list' => array(
+            'list_integer',
+            'list_float',
+            'list_text'
+        ),
+        'date' => array(
+            'date',
+            'datetime',
+            'datestamp'
+        )
+    );
+    
+    /**
+     * javascript - array of javascript files to load with Xpress
+     * plugins - array of plugin names to load for CKEDITOR
+     * quicklinks - toolbar definition for quicklinks
+     * tabs - toolbar definition for tabs
+     */
+    $toReturn = array(
+        
+        'tabs' => array(
+            'format' => array(
+                'title' => 'Content',
+                'description' => 'Basic text formatting control',
+                'icon' => $path . 'content.png',
+                'weight' => -10,
+                'visible' => TRUE,
+                'items' => array(
+                    'edit content' => array(
+                        'items' => array(
+                            'contentsettings' => array(
+                                'title' => 'Edit Page',
+                                'description' => 'Open the settings window',
+                                'icon' => $path . 'gear.png',
+                                'command' => 'editcontent',
+                                'command arguments' => array(),
+                                'field specific' => FALSE,
+                                'class' => 'settings-shadowbox'
+                            ),
+                            
+                            'contentsave' => array(
+                                'title' => 'Save',
+                                'description' => 'Save changes',
+                                'icon' => $path . 'content-save.png',
+                                'command arguments' => array(),
+                                'command' => 'contentsave',
+                                'content editable' => TRUE,
+                                'field specific' => FALSE
+                            ),
+                            
+                            // not having at least one "content edit" for the field select not to break
+                            // check further!!
+                            'edit' => array(
+                                'title' => 'link',
+                                'description' => 'link',
+                                'icon' => $path . 'link.png',
+                                'command' => 'link',
+                                'command arguments' => array(),
+                                'command enabled' => $types['text2'],
+                                'content editable' => TRUE,
+                                'field specific' => TRUE
+                            )
+                        )
+                    )
+                )
+            )
+            
+        )
+    );
+    
+    global $theme_key;
+    global $user;
+    
+    if ($theme_key === 'onestop') {
+        $onestopbuttons = array();
+        // checks if the user has permision to add content
+        if (rights_and_permission_user_group_has_right('tasks', 'create', $user)) {
+            $onestopbuttons['task'] = array(
+                'title' => 'Create Onestop Task',
+                'description' => 'Create new Onestop Task',
+                'icon' => $path . 'content-insert-blue.png',
+                'command' => 'onestoptask',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (rights_and_permission_user_group_has_right('checklists', 'create', $user)) {
+            $onestopbuttons['checkslist'] = array(
+                'title' => 'Create Onestop Checklist',
+                'description' => 'Create new Onestop Checklist',
+                'icon' => $path . 'content-insert-green.png',
+                'command' => 'onestopchecklist',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (rights_and_permission_user_group_has_right('offices', 'create', $user)) {
+            $onestopbuttons['office'] = array(
+                'title' => 'Create Onestop Office',
+                'description' => 'Create new Onestop Office',
+                'icon' => $path . 'content-insert-babyblue.png',
+                'command' => 'onestopoffice',
+                'field specific' => FALSE
+            );
+        }
+        if (rights_and_permission_user_group_has_right('onestop_ad_small', 'create', $user)) {
+            $onestopbuttons['adsmall'] = array(
+                'title' => 'Create Onestop Ad Small',
+                'description' => 'Create new Onestop Ad Small',
+                'icon' => $path . 'adsmall.png',
+                'command' => 'onestopadsmall',
+                'field specific' => FALSE
+            );
+        }
+        if (rights_and_permission_user_group_has_right('onestop_ad_large', 'create', $user)) {
+            $onestopbuttons['adlarge'] = array(
+                'title' => 'Create Onestop Ad Large',
+                'description' => 'Create new Onestop Ad Large',
+                'icon' => $path . 'adlarge.png',
+                'command' => 'onestopadlarge',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (!empty($onestopbuttons)) {
+            $toReturn['tabs']['format']['items']['create content onestop']['items'] = $onestopbuttons;
+        }
+    } elseif ($theme_key === 'training') {
+        
+        // checks if the user has permision to add content
+        if (rights_and_permission_user_group_has_right('admissions', 'create', $user)) {
+            $trainingbuttons['admissions'] = array(
+                'title' => 'Create Topic Page',
+                'description' => 'Create new Topic Page',
+                'icon' => $path . 'content-insert-admissions.png',
+                'command' => 'admissions',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (rights_and_permission_user_group_has_right('financialaid', 'create', $user)) {
+            $trainingbuttons['financialaid'] = array(
+                'title' => 'Create Topic Page',
+                'description' => 'Create new Topic Page',
+                'icon' => $path . 'content-insert-financialaid.png',
+                'command' => 'financialaid',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (rights_and_permission_user_group_has_right('registrar', 'create', $user)) {
+            $trainingbuttons['registrar'] = array(
+                'title' => 'Create Topic Page',
+                'description' => 'Create new Topic Page',
+                'icon' => $path . 'content-insert-registrar.png',
+                'command' => 'registrar',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (rights_and_permission_user_group_has_right('training_content_section', 'create', $user)) {
+            $trainingbuttons['training_content_section'] = array(
+                'title' => 'Create Content Section',
+                'description' => 'Create new Content Section',
+                'icon' => $path . 'content-insert-babyblue.png',
+                'command' => 'training_content_section',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (rights_and_permission_user_group_has_right('training_positions_page', 'create', $user)) {
+            $trainingbuttons['training_positions_page'] = array(
+                'title' => 'Create Positions Page',
+                'description' => 'Create new Positions Page',
+                'icon' => $path . 'content-insert-babyblue.png',
+                'command' => 'training_positions_page',
+                'field specific' => FALSE
+            );
+        }
+        
+        if (!empty($trainingbuttons)) {
+            $toReturn['tabs']['format']['items']['create content onestop']['items'] = $trainingbuttons;
+        }
+    }
+    
+    
+    return $toReturn;
+    
+}
+
+/**
+ * Implements hook_xpress_writer()
+ */
+function xpress_xpress_writer() {
+    $path = drupal_get_path('module', 'xpress');
+    
+    return array(
+        'text' => array(
+            'weight' => 100, //items of a lower weight will overwrite this writer
+            'callback' => 'xpress_writer_text', //the function to call to write the field data
+            'file' => 'xpress.writer.inc', //optional, a file to find the callback function in. Defaults to empty string.
+            'file path' => $path //optional, the directory of where to find the file. Defaults to module directory.
+        ),
+        'text_long' => array(
+            'weight' => 100,
+            'callback' => 'xpress_writer_text_long',
+            'file' => 'xpress.writer.inc',
+            'file path' => $path
+        ),
+        'text_with_summary' => array(
+            'weight' => 100,
+            'callback' => 'xpress_writer_text_with_summary',
+            'file' => 'xpress.writer.inc',
+            'file path' => $path
+        )
+    );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Use the appropriate write handler to take the field data and turn it into..
+ */
+function xpress_write(&$node, $data_type, $field_name, $language, $delta, $value, $view_mode) {
+    //get the writer function
+    $writer = xpress_get_writer_function_name($data_type, true, true);
+    
+    //call the writer function
+    if ($writer)
+        return call_user_func($writer, $node, $field_name, $language, $delta, $value, $view_mode);
+    
+    return null;
+}
+
+/**
+ * Get the function name that is used to write for a field data type.
+ * @param string $data_type The data type to get the writing function for.
+ * @param boolean $load_paths TRUE to automatically include the writer's path to the function. Default to FALSE.
+ * @param boolean $verify If TRUE, the function name will only be returned if it exists, default to FALSE.
+ * @return string Returns a string with the function name to call.
+ */
+function xpress_get_writer_function_name($data_type, $load_paths = FALSE, $verify = FALSE) {
+    $writers = xpress_get_writers();
+    
+    //if the writer exists then do some final processing before returning
+    if (isset($writers[$data_type])) {
+        $details  = $writers[$data_type];
+        $callback = $details['callback'];
+        
+        //determine file path and include once
+        if ($load_paths) {
+            $path = $details['file'];
+            if ($path && $details['file path']) {
+                if (substr($details['file path'], -1) != '/')
+                    $path = '/' . $path;
+                $path = $details['file path'] . $path;
+            }
+            if ($path)
+                include_once($path);
+        }
+        
+        //verify that the callback funciton exists
+        if ($verify && !function_exists($callback))
+            $callback = null;
+        
+        //return the callback function name
+        return $callback;
+    }
+    
+    return null;
+}
+
+/**
+ * Get a list of the active writers.
+ * @return array Returns an associative array containing details of each writer.
+ */
+function xpress_get_writers() {
+    //get cached writers
+    $writers = Xpress::get('writer_cache', NULL);
+    
+    //no writers cached, then build writers data
+    if (!$writers) {
+        //get all modules which implement hook_xpress_writer
+        $modules = module_implements('xpress_writer');
+        
+        //go through each module, building data
+        foreach ($modules as $module) {
+            
+            //make sure the hook_xpress_writer function exists for the module
+            $function = $module . '_xpress_writer';
+            if (function_exists($function)) {
+                
+                //get the result from the hook_xpress_writer function
+                $result = call_user_func($function);
+                if (isset($result) && is_array($result)) {
+                    
+                    //loop through results for each field data type to build final data structure
+                    foreach ($result as $data_type_identifier => $details) {
+                        //set some default values for details
+                        if (!isset($details['weight']))
+                            $details['weight'] = 0;
+                        if (!isset($details['callback']))
+                            $details['callback'] = NULL;
+                        if (!isset($details['file']))
+                            $details['file'] = '';
+                        if (!isset($details['file path']))
+                            $details['file path'] = drupal_get_path('module', $module);
+                        $details['module'] = $module;
+                        
+                        //make sure a callback exists before storing data
+                        if ($details['callback']) {
+                            //if first data for data type then store it
+                            if (!isset($writers[$data_type_identifier])) {
+                                $writers[$data_type_identifier] = $details;
+                                
+                                //if another data set has occupied the data type space then the
+                                //win goes to the one with the lower weight and then to the oldest
+                            } else if ($writers[$data_type_identifier] > $details['weight']) {
+                                $writers[$data_type_identifier] = $details;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        //cache the writers
+        Xpress::set('writer_cache', $writers);
+    }
+    
+    return $writers;
+}
+
+
+/**
+ * Save or get field content editability and scope.
+ * @param string $entity_name The name of the entity.
+ * @param string $bundle_name The name of the bundle.
+ * @param string $field_name The name of the field.
+ * @param string $scope The value to set the scope to. If NULL then the field is not content editable.
+ * @return mixed Returns the value of the field's scope.
+ */
+function xpress_field_scope($entity_name, $bundle_name, $field_name, $scope = 0) {
+    //get cached scope
+    $value = Xpress::get('field_scope', 0);
+    
+    //if value is not cached then get the stored scope value
+    if ($value === 0) {
+        //get value from database
+        $result = db_select('xpress_field_scope', 's')->fields('s')->condition('entity', $entity_name, '=')->condition('bundle', $bundle_name, '=')->condition('field', $field_name, '=')->execute()->fetchAssoc();
+        $value  = $result === FALSE ? NULL : $result['scope'];
+    }
+    
+    //if setting a value and different then cached value then store scope
+    if (func_num_args() > 3) {
+        drupal_set_message('scope delete ' . $field_name);
+        //delete the previous record from the database
+        db_delete('xpress_field_scope')->condition('entity', $entity_name, '=')->condition('bundle', $bundle_name, '=')->condition('field', $field_name, '=')->execute();
+        
+        //set scope to non NULL value - signifies that content is editable
+        if ($scope !== NULL) {
+            drupal_set_message('scope set ' . $field_name . ' to ' . $scope);
+            $record = array(
+                'entity' => $entity_name,
+                'bundle' => $bundle_name,
+                'field' => $field_name,
+                'scope' => (string) $scope
+            );
+            drupal_write_record('xpress_field_scope', $record);
+        }
+        
+        //update the cache and value to match scope
+        Xpress::set('field_scope', $scope);
+        $value = $scope;
+    }
+    
+    return $value;
+}
+
+/**
+ *
+ * @param string $entity_name The name of the entity.
+ * @param string $bundle_name The name of the bundle.
+ * @param string $field_name The name of the field.
+ * @param mixed $tabs NULL to erase all tabs, array of values to store otherwise. If ommited then this will not save preferred tabs.
+ * @return array Returns an array of preferred tabs for the field. 
+ */
+function xpress_field_preferred_tabs($entity_name, $bundle_name, $field_name, $tabs = 0) {
+    //get cached tabs
+    $value = Xpress::get('field_tabs', 0);
+    
+    //if value is not cached then get the stored value
+    if ($value === 0) {
+        $value = array();
+        
+        //get value from database
+        $result = db_select('xpress_field_tabs', 't')->fields('t')->condition('entity', $entity_name, '=')->condition('bundle', $bundle_name, '=')->condition('field', $field_name, '=')->execute();
+        
+        //if results were returned then populate
+        while ($row = $result->fetchAssoc()) {
+            $value[] = $row['tab'];
+        }
+        ;
+    }
+    
+    //check to see if tabs were specified as a parameter
+    if (is_array($tabs) || $tabs === null) {
+        $modified = false;
+        
+        //turn tabs into an array
+        if (!$tabs)
+            $tabs = array();
+        
+        //if setting a value and different then cached value then store changes
+        if (is_array($tabs) && is_array($value)) {
+            if (count($tabs) != count($value)) {
+                $modified = true;
+            } else {
+                for ($i = 0; $i < count($tabs); $i++) {
+                    if (!in_array($tabs[$i], $value)) {
+                        $modified = true;
+                        break;
+                    }
+                }
+            }
+        } else if ($tabs === null && $value !== null) {
+            $modified = true;
+        }
+        
+        //if modified, erase old values and insert new
+        if ($modified) {
+            //delete the previous record from the database
+            db_delete('xpress_field_tabs')->condition('entity', $entity_name, '=')->condition('bundle', $bundle_name, '=')->condition('field', $field_name, '=')->execute();
+            
+            //if tabs is not null then start storing records
+            for ($i = 0; $i < count($tabs); $i++) {
+                $record = array(
+                    'entity' => $entity_name,
+                    'bundle' => $bundle_name,
+                    'field' => $field_name,
+                    'tab' => (string) $tabs[$i]
+                );
+                $saved  = drupal_write_record('xpress_field_tabs', $record);
+            }
+            
+            //update the cache and value to match tabs
+            Xpress::set('xpress_field_tabs', $tabs);
+            $value = $tabs;
+        }
+    }
+    
+    return $value;
+}
+
+/**
+ * Save or get command enabled state for a specific entity, bundle, and field.
+ * @param string $entity_name The name of the entity.
+ * @param string $bundle_name The name of the bundle.
+ * @param string $field_name The name of the field.
+ * @param string $command Tha name of the command.
+ * @param boolean $value (Optional) TRUE/FALSE to update command status.
+ * @return boolean Returns the command status.
+ */
+function xpress_command_state($entity_name, $bundle_name, $field_name, $command, $value = NULL) {
+    //get stored command states
+    $states = Xpress::get('command_states', array());
+    
+    //make sure that the cache has a place for this command status
+    if (!array_key_exists($entity_name, $states))
+        $states[$entity_name] = array();
+    if (!array_key_exists($bundle_name, $states[$entity_name]))
+        $states[$entity_name][$bundle_name] = array();
+    if (!array_key_exists($field_name, $states[$entity_name][$bundle_name]))
+        $states[$entity_name][$bundle_name][$field_name] = array();
+    
+    //if the value is not cached then get the value from database
+    if (!array_key_exists($command, $states[$entity_name][$bundle_name][$field_name])) {
+        //get value from database
+        $result = db_select('xpress_field_commands', 'c')->fields('c')->condition('entity', $entity_name, '=')->condition('bundle', $bundle_name, '=')->condition('field', $field_name, '=')->condition('command', $command, '=')->execute()->fetchAssoc();
+        
+        //cache the value (TRUE or FALSE)
+        $states[$entity_name][$bundle_name][$field_name][$command] = $result !== FALSE;
+    }
+    
+    //if setting a value
+    if ($value !== NULL && is_bool($value) && $value != $states[$entity_name][$bundle_name][$field_name][$command]) {
+        //store the new command value in cache
+        $states[$entity_name][$bundle_name][$field_name][$command] = $value;
+        
+        //set the command to enabled in the database by inserting a new row for this command
+        if ($value) {
+            $record = array(
+                'entity' => $entity_name,
+                'bundle' => $bundle_name,
+                'field' => $field_name,
+                'command' => $command
+            );
+            drupal_write_record('xpress_field_commands', $record);
+            
+            //set this command as disabled by removing the row from the database
+        } else {
+            db_delete('xpress_field_commands')->condition('entity', $entity_name, '=')->condition('bundle', $bundle_name, '=')->condition('field', $field_name, '=')->condition('command', $command, '=')->execute();
+        }
+    }
+    
+    //store command states
+    Xpress::set('command_states', $states);
+    
+    //return the command state
+    return $states[$entity_name][$bundle_name][$field_name][$command];
+}
+
+/**
+ * Get a list of available xpress commands as defined in hook_xpress.
+ * @param boolean $group TRUE to group commands, FALSE for linear array.
+ * @param string $type The type of commands to get: NULL for both, 'quicklinks', or 'tabs'
+ * @return array Returns an array containing all commands. If not grouped then command details will be keyed by command.
+ */
+function xpress_get_commands($group = TRUE, $type = NULL) {
+    //build internal anonymous function for building a command
+    $buildCommand = function($item) {
+        return array(
+            'title' => $item['title'],
+            'description' => isset($item['description']) ? $item['description'] : '',
+            'icon' => isset($item['icon']) ? $item['icon'] : '',
+            'command' => $item['command'],
+            'command arguments' => isset($item['command arguments']) ? $item['command arguments'] : array(),
+            'command enabled' => isset($item['command enabled']) ? $item['command enabled'] : FALSE,
+            'content editable' => isset($item['content editable']) ? $item['content editable'] : TRUE,
+            'field specific' => isset($item['field specific']) ? $item['field specific'] : TRUE,
+            // icat later addition
+            'class' => isset($item['class']) ? $item['class'] : ''
+        );
+    };
+    
+    //get configuration data from modules that invoke hook_xpress_toolbar
+    $data = xpress_get_toolbar(true);
+    
+    //initialize commands array
+    $commands = $group ? array(
+        'quickstart' => array(),
+        'tabs' => array()
+    ) : array();
+    
+    //get all commands and associate their groupings
+    if (($type === NULL || $type == 'quicklinks') && array_key_exists('quicklinks', $data)) {
+        foreach ($data['quicklinks'] as $group_name => $group_value) {
+            foreach ($group_value['items'] as $item_value) {
+                //get command details
+                $details = $buildCommand($item_value);
+                
+                //store command details
+                if ($group) {
+                    $commands['quickstart'][$group_name][] = $details;
+                } else {
+                    $commands[$item_value['command']] = $details;
+                }
+            }
+        }
+    }
+    if (($type === NULL || $type == 'tabs') && array_key_exists('tabs', $data)) {
+        foreach ($data['tabs'] as $tab_name => $tab) {
+            foreach ($tab['items'] as $group_value) {
+                foreach ($group_value['items'] as $item_value) {
+                    //get command details
+                    $details = $buildCommand($item_value);
+                    
+                    //store command details
+                    if ($group) {
+                        $commands['tabs'][$tab_name][] = $details;
+                    } else {
+                        $commands[$item_value['command']] = $details;
+                    }
+                }
+            }
+        }
+    }
+    
+    //sort commands
+    if ($group) {
+        ksort($commands['quickstart']);
+        ksort($commands['tabs']);
+    } else {
+        ksort($commands);
+    }
+    
+    return $commands;
+}
+
+
+/**
+ * Determine permissions for the user regarding a node.
+ * @param node The node object to check permissions against.
+ * @return Returns an associative array listing CRUD permissions.
+ */
+function xpress_get_permissions($node) {
+    $access = array();
+    if (node_access('create', $node))
+        $access[] = 'create';
+    if (node_access('view', $node))
+        $access[] = 'view';
+    if (node_access('update', $node))
+        $access[] = 'update';
+    if (node_access('delete', $node))
+        $access[] = 'delete';
+}
+
+/**
+ * Determine if a user has one of the specified permissions.
+ * @param node The Drupal node object to check permissions on.
+ * @param mixed A string or an array of strings to check node operation permissions on.
+ */
+function xpress_has_permission($node, $ops) {
+    if (is_string($ops))
+        $ops = array(
+            $ops
+        );
+    for ($i = 0; $i < count($ops); $i++) {
+        if (node_access($ops[$i], $node))
+            return true;
+    }
+    return false;
+}
+
+/**
+ * Get the xpress toolbar structure.
+ * @param boolean $singular If TRUE and in the case that namespace conflicts arise the lowest weight will provide the title and description, otherwise title and description will be joined.
+ */
+function xpress_get_toolbar($singular) {
+    //get cached toolbar if it exists
+    $data = Xpress::get('toolbar', NULL);
+    if ($data)
+        return $data;
+    
+    global $button_normalize, $group_normalize, $buttons_merge;
+    
+    //define a function to normalize a button
+    $button_normalize = function(&$button) {
+        //normalize details
+        if (!is_string($button['description']))
+            $button['description'] = '';
+        if (!is_string($button['icon']))
+            $button['icon'] = '';
+        if (!isset($button['weight']) || !is_int($button['weight']))
+            $button['weight'] = 0;
+        if (!isset($button['command arguments']) || !is_array($button['command arguments']))
+            $button['command arguments'] = array();
+        if (!isset($button['content editable']) || !is_bool($button['content editable']))
+            $button['content editable'] = true;
+        if (!isset($button['field specific']) || !is_bool($button['field specific']))
+            $button['field specific'] = true;
+        // icat later addition
+        if (!isset($button['class']) || !is_string($button['class']))
+            $button['class'] = '';
+    };
+    
+    //define a function to normalize a group
+    $group_normalize = function(&$group) {
+        global $button_normalize;
+        
+        //normalize details
+        if (!isset($group['weight']) || !is_int($group['weight']))
+            $group['weight'] = 0;
+        if (!isset($group['items']) || !is_array($group['items']))
+            $group['items'] = array();
+        foreach ($group['items'] as $key => $value)
+            $button_normalize($group['items'][$key]);
+    };
+    
+    
+    //define a function for merging buttons
+    $buttons_merge = function(&$target, $source) {
+        foreach ($source as $key => $details) {
+            
+            //make sure required parameters exist and button namespace isn't already existing
+            if (is_string($details['title']) && strlen($details['title']) > 0 && is_string($details['command']) && strlen($details['command']) > 0 && isset($details['command enabled']) && ($details['command enabled'] === true || (is_array($details['command enabled']) && count($details['command enabled']) > 0)) && !isset($target[$key])) {
+                
+                //normalize details
+                $button_normalize($details);
+                
+                //store details
+                $target[$key] = $details;
+            }
+        }
+    };
+    
+    //define a function for merging button groups
+    $groups_merge = function(&$target, $source) {
+        global $group_normalize, $buttons_merge;
+        
+        foreach ($source as $key => $details) {
+            //normalize details
+            $group_normalize($details);
+            
+            if (!isset($target[$key])) {
+                $target[$key] = $details;
+            } else {
+                $buttons_merge($target[$key], $details['items']);
+            }
+        }
+    };
+    
+    //initialize data array
+    $data = array(
+        'tabs' => array(),
+        'quicklinks' => array()
+    );
+    
+    foreach (module_implements('xpress_toolbar') as $module) {
+        $function = $module . '_xpress_toolbar';
+        if (function_exists($function)) {
+            $result = call_user_func($function);
+            if (isset($result) && is_array($result)) {
+                
+                //build tabs structure
+                if (isset($result['tabs']) && is_array($result['tabs'])) {
+                    foreach ($result['tabs'] as $tab_key => $tab_details) {
+                        
+                        //normalize tab details
+                        if (!is_string($tab_details['title']))
+                            $tab_details['title'] = '';
+                        if (!is_string($tab_details['description']))
+                            $tab_details['description'] = '';
+                        if (!is_string($tab_details['icon']))
+                            $tab_details['icon'] = '';
+                        if (!isset($tab_details['items']) || !is_array($tab_details['items']))
+                            $tab_details['items'] = array();
+                        if (!isset($tab_details['weight']) || !is_int($tab_details['weight']))
+                            $tab_details['weight'] = 0;
+                        if (!isset($tab_details['visible']) || !is_bool($tab_details['visible']))
+                            $tab_details['visible'] = false;
+                        
+                        //if no data exists for this tab key then store it
+                        if (!isset($data['tabs'][$tab_key])) {
+                            foreach ($tab_details['items'] as $key => $value)
+                                $group_normalize($tab_details['items'][$key]);
+                            $data['tabs'][$tab_key] = $tab_details;
+                            
+                            //data exists for this tab key, perform a merge
+                        } else {
+                            $lighter = $tab_details['weight'] < $data['tabs'][$tab_key]['weight'];
+                            
+                            //don't use a singular title and description
+                            if (!$singular) {
+                                //join titles
+                                if (strlen($tab_details['title']) > 0) {
+                                    if (strlen($data['tabs'][$tab_key]['title']) == 0) {
+                                        $data['tabs'][$tab_key]['title'] = $tab_details['title'];
+                                    } else if ($lighter) {
+                                        $data['tabs'][$tab_key]['title'] = $tab_details['title'] . ', ' . $data['tabs'][$tab_key]['title'];
+                                    } else {
+                                        $data['tabs'][$tab_key]['title'] .= ', ' . $tab_details['title'];
+                                    }
+                                }
+                                
+                                //join descriptions
+                                if (strlen($tab_details['description']) > 0) {
+                                    if (strlen($data['tabs'][$tab_key]['description']) == 0) {
+                                        $data['tabs'][$tab_key]['description'] = $tab_details['description'];
+                                    } else if ($lighter) {
+                                        $data['tabs'][$tab_key]['description'] = $tab_details['description'] . ', ' . $data['tabs'][$tab_key]['description'];
+                                    } else {
+                                        $data['tabs'][$tab_key]['description'] .= ', ' . $tab_details['description'];
+                                    }
+                                }
+                                
+                                //use a singular title and description (use whichever is lighter)
+                            } elseif ($lighter) {
+                                $data['tabs'][$tab_key]['title']       = $tab_details['title'];
+                                $data['tabs'][$tab_key]['description'] = $tab_details['description'];
+                            }
+                            
+                            //use lighter icon or only icon
+                            if ($lighter && strlen($tab_details['icon']) > 0)
+                                $data['tabs'][$tab_key]['icon'] = $tab_details['icon'];
+                            
+                            //use visibility == true if set
+                            if ($tab_details['visible'])
+                                $data['tabs'][$tab_key]['visible'] = true;
+                            
+                            //merge tab items
+                            $groups_merge($data['tabs'][$tab_key]['items'], $tab_details['items']);
+                        }
+                    }
+                }
+                
+                //build quicklinks structure
+                if (isset($result['quicklinks']) && is_array($result['quicklinks'])) {
+                    $groups_merge($data['quicklinks'], $result['quicklinks']);
+                }
+            }
+        }
+    }
+    
+    //cache the toolbar
+    Xpress::set('toolbar', $data);
+    
+    //kpr($data);
+    
+    return $data;
+    
+}
+
+
+////////////////////////
+//                    //
+//   MENU CALLBACKS   //
+//   CRUD FUNCTIONS   //
+//                    //
+////////////////////////
+
+/**
+ * This function acts as the single gateway for all Xpress AJAX commands.
+ * @param string $op Defines the operation to execute.
+ */
+function xpress_ajax($op) {
+    $data         = $_POST['data'];
+    $page_node_id = (int) $_POST['page'];
+    $result       = array(
+        'data' => array(),
+        'errors' => 0,
+        'reload' => false
+    );
+    
+    
+    
+    
+    if ($op == 'create') {
+        
+        
+    } else if ($op == 'view') {
+        
+        
+    } else if ($op == 'update') {
+        
+        //go through through data getting out each node id and it's data
+        foreach ($data as $node_id => $field) {
+            $node = node_load($node_id);
+            
+            //make sure the user has write access to this node
+            if (node_access('update', $node)) {
+                
+                //if a node does not exist then store the error and provide a request
+                //to reload the page that the user is on
+                if (!$node) {
+                    watchdog('xpress', 'Save error: Could not update node with ID @nid because it does not exist', array(
+                        '@nid' => $node_id
+                    ), WATCHDOG_ERROR);
+                    $result['errors']++;
+                    if (!$result['reload'])
+                        $result['reload'] = true;
+                    
+                    //node exists, start updating the fields for node
+                } else {
+                    //go through each field for the node
+                    foreach ($field as $field_name => $field_items) {
+                        
+                        //if not title field then process field details
+                        if ($field_name != 'title') {
+                            
+                            for ($delta = 0; $delta < count($field_items); $delta++) {
+                                //get single field item
+                                $item = $field_items[$delta];
+                                
+                                //if item == false then no modification for this field
+                                if ($item) {
+                                    $lang = $item['language'];
+                                    
+                                    //make sure that field exists for node, otherwise throw an error
+                                    if (!isset($node->{$field_name})) {
+                                        $result['errors']++;
+                                        watchdog('xpress', 'Save error: Field @field does not exists for Node with ID: @nid.', array(
+                                            '@field' => $field_name,
+                                            '@nid' => $node_id
+                                        ), WATCHDOG_ERROR);
+                                        if (!$result['reload'])
+                                            $result['reload'] = true;
+                                        
+                                        //make sure that the language exists for the field, otherwise throw an error
+                                    } elseif (!isset($node->{$field_name}[$lang])) {
+                                        $result['errors']++;
+                                        watchdog('xpress', 'Save error: Field @field does not support language: @lang.', array(
+                                            '@field' => $field_name,
+                                            '@lang' => $lang
+                                        ), WATCHDOG_ERROR);
+                                        if (!$result['reload'])
+                                            $result['reload'] = true;
+                                        
+                                        //no errors, write the changes using the Xpress writer associated with the field data type
+                                    } else {
+                                        $result['data']['item']   = $item;
+                                        $result['data']['node']   = (array) $node;
+                                        $result['data']['before'] = $node->{$field_name}[$lang][$delta];
+                                        $result['data']['write']  = xpress_write($node, $item['data_type'], $item['field_name'], $lang, $item['delta'], $item['value'], $item['view_mode']);
+                                        $result['data']['after']  = $node->{$field_name}[$lang][$delta];
+                                    }
+                                }
+                            }
+                            
+                            //if field_name == 'title' then update title
+                        } elseif ($field_items[0]) {
+                            //update the title for the node (after removing all HTML tags)
+                            $node->title = strip_tags($field_items[0]['value']);
+                            
+                            //if this node id matches the page id, because the title has been modified the reload url becomes a redirect
+                            if ($node->nid == $page_node_id) {
+                                $result['reload'] = drupal_lookup_path('alias', 'node/' . $page_node_id);
+                            }
+                        }
+                    }
+                    
+                    //save the changes to the node
+                    node_save($node);
+                }
+            }
+        }
+        
+        
+    } else if ($op == 'delete') {
+        
+        
+    }
+    
+    drupal_json_output($result);
+    drupal_exit();
+}
+
+function xpress_ajax_load($nid = 0) {
+    $output = '';
+    
+    //get themed node output
+    $node = node_load($nid, NULL, false);
+    if ($node) {
+        $vnode  = node_view($node);
+        $output = theme('node', $vnode);
+    }
+    
+    //prepare ajax response
+    $commands   = array();
+    $commands[] = ajax_command_replace('#content', "<div id='content'>" . $output . "</div>");
+    $page       = array(
+        '#type' => 'ajax',
+        '#commands' => $commands
+    );
+    
+    //send ajax response
+    ajax_deliver($page);
+}
+
+function xpress_ajax_update() {
+    $post = $_POST;
+    
+    
+    drupal_json_output($post);
+    drupal_exit();
+}
+
+
+//////////////////////////////////
+//                              //
+//  XPRESS NAMESPACE           //
+//                              //
+//////////////////////////////////
+
+class Xpress {
+    
+    private static $_data = array();
+    
+    /**
+     * Set the value to a specific key
+     * @param string $key The key of the value to set.
+     * @param type $value The value to set.
+     */
+    public static function set($key, $value) {
+        self::$_data[$key] = $value;
+    }
+    
+    /**
+     * Get the value of specified key. If key does not exist, default value is returned.
+     * @param string key The key of the value to get.
+     * @param mixed default_value The default value to return if value is not found.
+     * @return Returns the value.
+     */
+    public static function get($key, $default_value = NULL) {
+        if (array_key_exists($key, self::$_data))
+            return self::$_data[$key];
+        return $default_value;
+    }
+    
+    /**
+     * Returns TRUE if the Xpress editor should be enabled. This checks that the
+     * theme has elected to be used as an Xpress theme and it checks that the
+     * user has access to operations necissary for editing the node.
+     * @param node The Drupal node to check against.
+     */
+    public static function editor_enabled($node) {
+        $permission = xpress_has_permission($node, array(
+            'create',
+            'update',
+            'delete'
+        ));
+        if (!$permission)
+            return false;
+        
+        //get cached enabled value if set
+        $enabled = Xpress::get('enabled', NULL);
+        if ($enabled !== NULL)
+            return $enabled;
+        
+        //get the current theme
+        $path_ar       = explode('/', drupal_get_path('theme', $GLOBALS['theme']));
+        $current_theme = strtolower(array_pop($path_ar));
+        
+        //get the list of xpress enabled themes
+        $themes = variable_get('xpress_themes', array());
+        
+        //set enabled value into cache
+        $enabled = in_array($current_theme, $themes) && user_access('xpress editor');
+        Xpress::set('enabled', $enabled);
+        
+        //return enabled value
+        return $enabled;
+    }
+    
+    /**
+     * Get a keyed array of all registered commands.
+     * @return array Returns a keyed array of all registered commands.
+     */
+    public static function getCommands() {
+        //get all commands once
+        $commands = self::get('commands', NULL);
+        if (!$commands) {
+            $commands = xpress_get_commands(false);
+            self::set('commands', $commands);
+        }
+        return $commands;
+    }
+    
+    /**
+     * Get an array of all commands which should be accessible for the field.
+     * @param string $bundle The bundle which the field is in.
+     * @param string $field_name The name of the field.
+     * @return array Returns an array of accessible commands for the field. 
+     */
+    public static function getFieldCommands($bundle, $field_name) {
+        //get all commands
+        $commands = self::getCommands();
+        
+        //get cached field commands (if available)
+        $field_commands = Xpress::get('field_commands_' . $bundle . '__' . $field_name, NULL);
+        if (is_array($field_commands))
+            return $field_commands;
+        
+        //get field commands
+        $field_commands = array();
+        foreach ($commands as $command => $tmp) {
+            $command_state = xpress_command_state('node', $bundle, $field_name, $command);
+            if ($command_state)
+                $field_commands[] = $command;
+        }
+        
+        //cache field commands and return
+        Xpress::set('field_commands_' . $bundle . '__' . $field_name, $field_commands);
+        return $field_commands;
+    }
+    
+    /**
+     * Get the title label for a bundle.
+     * @param string $bundle The bundle to get the title label for.
+     * @return string Returns the title label for a bundle.
+     */
+    public static function getBundleTitleLabel($bundle) {
+        
+        //get title information only once per bundle
+        $bundle_title_label = Xpress::get('bundle_title_label', array());
+        if (!array_key_exists($bundle, $bundle_title_label)) {
+            
+            //get and cache title for bundle
+            $extra_fields = field_info_extra_fields('node', $bundle, 'form');
+            if (array_key_exists('title', $extra_fields)) {
+                $bundle_title_label[$bundle] = $extra_fields['title']['label'];
+                Xpress::set('bundle_title_label', $bundle_title_label);
+            }
+        }
+        
+        return $bundle_title_label[$bundle];
+    }
+    
+    /**
+     * Get general information about a field within a bundle.
+     * @param string $bundle The bundle containing the field.
+     * @param string $field_name The field name of the field to get the information about.
+     * @return array Returns a keyed array with information about the field.
+     */
+    public static function getBundleFieldAttributes($bundle, $field_name) {
+        $bundle_field_info = self::getBundleFieldInfo($bundle, $field_name);
+        $field_info        = self::getFieldInfo($field_name);
+        
+        return array(
+            'settings' => $bundle_field_info['settings'],
+            'min' => (int) $bundle_field_info['required'],
+            'max' => $field_info['cardinality']
+        );
+    }
+    
+    public static function getBundleFieldInfo($bundle, $field_name = NULL) {
+        //get field information only once per bundle
+        $bundle_field_info = Xpress::get('bundle_field_info', array());
+        if (!array_key_exists($bundle, $bundle_field_info)) {
+            $bundle_field_info[$bundle] = array();
+            
+            //get all regular fields from the bundle
+            $instances = field_info_instances('node', $bundle);
+            foreach ($instances as $name => $instance)
+                $bundle_field_info[$bundle][$name] = $instance;
+            
+            //cache field bundle information
+            Xpress::set('bundle_field_info', $bundle_field_info);
+        }
+        
+        return !$field_name ? $bundle_field_info[$bundle] : $bundle_field_info[$bundle][$field_name];
+    }
+    
+    public static function getFieldInfo($field_name = NULL) {
+        //get field info once for all fields
+        $field_info = self::get('field_info', NULL);
+        if (!$field_info) {
+            $field_info = field_info_fields();
+            self::set('field_info', $field_info);
+        }
+        
+        return !$field_name ? $field_info : $field_info[$field_name];
+    }
+    
+}
+
+/**
+ * The following class extends functionality available in the module empty_fields
+ */
+class XpressPlaceholder extends EmptyFieldHandler {
+    
+    /**
+     * Implementation of EmptyFieldText::defaults().
+     *
+     * @return array
+     *   An array of default_values for the form below. Key names must match.
+     */
+    public function defaults() {
+        return array(
+            'empty_class' => ''
+        );
+    }
+    
+    /**
+     * Implementation of EmptyFieldText::form().
+     *
+     * @return array
+     *   A FAPI array to be used in configuration of this empty text plugin.
+     */
+    public function form() {
+        $form['empty_class'] = array(
+            '#type' => 'textfield',
+            '#title' => t('CSS class name'),
+            '#default_value' => isset($this->options['empty_class']) ? $this->options['empty_class'] : '',
+            '#description' => t('CSS class name to apply to Xpress placeholder link.')
+        );
+        
+        return $form;
+    }
+    
+    /**
+     * Implementation of EmptyFieldText::react().
+     *
+     * @return string
+     *   A rendered string of html for display.
+     */
+    public function react($context) {
+        global $user;
+        $args = array(
+            $context['entity_type'] => $context['entity'],
+            'user' => $user
+        );
+        
+        //if not a node entity type or no editing access then return an empty string
+        if ($context['entity_type'] != 'node' || !Xpress::editor_enabled($context['entity']))
+            return '';
+        
+        //load data about the field
+        $data = array(
+            'nid' => $context['entity']->nid,
+            'bundle' => $context['entity']->type,
+            'field_name' => $context['instance']['field_name'],
+            'required' => $context['instance']['required']
+        );
+        
+        //return a link to add field content
+        $html = "<a href='#' class='xpress-context-placeholder";
+        if ($context['instance']['required'])
+            $html .= ' xpress-context-placeholder-required';
+        if (strlen($this->options['empty_class']) > 0)
+            $html .= " " . $this->options['empty_class'];
+        $html .= "' data-xpress='" . json_encode($data) . "'>";
+        $html .= t('Insert content for ') . $context['instance']['label'];
+        $html .= "</a>";
+        return $html;
+    }
+    
+    /**
+     * Implementation of EmptyFieldText:summaryText().
+     *
+     * @return string
+     *   Text for the field formatter settings summary.
+     */
+    public function summaryText() {
+        return '<br />' . t('Empty Text: Use Xpress placeholder');
+    }
+}
+
+?>

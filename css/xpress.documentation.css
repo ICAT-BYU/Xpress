@@ -1,0 +1,35 @@
+#XpressDocumentationMenu {
+  width: 200px;
+  margin-left: -200px;
+  float: left;
+}
+#XpressDocumentationMenu > * {
+  padding: 0px 10px;
+}
+#XpressDocumentationMenu p {
+  font-weight: bold;
+  margin: 0px;
+}
+#XpressDocumentationMenu ul {
+  margin: 0px;
+  padding: 0px;
+  list-style: none;
+}
+#XpressDocumentationMenu ul ul {
+  margin-left: 10px;
+}
+#XpressDocumentationMenu li a {
+  display: block;
+  padding: 5px 10px;
+}
+
+#page {
+  margin: 0px !important;
+}
+#page #content {
+  padding-left: 200px;
+}
+
+pre {
+  background-color: #DDD;
+}
