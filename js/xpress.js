@@ -1297,7 +1297,7 @@
                 }
 
             } else {
-                bod.focus();
+                //bod.focus(); // IE takes focus off the edited field if this is set
                 active_field = null;
             }
 
