@@ -36,7 +36,8 @@
     Xpress.command.register('contentsave', {
         exec: function (field, item, editor, params) {
             var i, j, items, fields, field_data, item_data, content, data = {};
-
+            var CKEDITOR   = window.parent.CKEDITOR;
+  
             //get a list of modified Field objects
             fields = Xpress.field.getModified();
             for (i = 0; i < fields.length; i++) {
@@ -59,7 +60,6 @@
 
                         //get the content via the field item reader
                         content = items[j].read();
-
                         //add relevant update data
                         data[field_data.id][field_data.field_name].push({
                             value: content,
@@ -87,21 +87,24 @@
             }, function () {
                 //console.info('ajax success');
             });
+            
+            // reset dirty values after save
+            for(var instanceName in CKEDITOR.instances) {
+                CKEDITOR.instances[instanceName].resetDirty();
+            }
+            
         },
         state: function (field, item, editor) {
-            return Xpress.command.ENABLED;
+            var needSave = false;
+            // Check for Dirty values to see if Save should be active
+            for(var instanceName in CKEDITOR.instances) {
+                if (CKEDITOR.instances[instanceName].checkDirty()) needSave = true;
+            }
+            if (needSave) {return Xpress.command.ENABLED;}
+            else {return Xpress.command.DISABLED;}
         },
         ctrl: true,
         charCode: 's'
-    });
-
-    // not having at least one "content edit" for the field select not to break
-    // check further!!
-    Xpress.command.register('link', {
-        exec: function (field, item, editor, params) {},
-        state: function (field, item, editor) {
-            Xpress.command.INACCESSIBLE;
-        },
     });
 
     Xpress.command.register('editcontent', {

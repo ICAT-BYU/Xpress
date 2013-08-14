@@ -38,13 +38,15 @@
         case 'table':
         case 'tableProperties':
             //remove fields from table property dialog
-            //MJK				tab = dialog.getContents('info');
-            //MJK				tab.remove('txtWidth');
-            //MJK				tab.remove('txtHeight');
-            //MJK				tab.remove('txtCellSpace');
-            //MJK				tab.remove('txtCellPad');
-            //MJK				tab.remove('txtBorder');
-            //MJK				tab.remove('cmbAlign');
+            tab = dialog.getContents('info');
+            tab.remove('txtWidth');
+            tab.remove('txtHeight');
+            tab.remove('txtCellSpace');
+            tab.remove('txtCellPad');
+            tab.remove('txtBorder');
+            tab.remove('cmbAlign');
+            tab.remove('txtCaption');
+            tab.remove('txtSummary');
 
             //remove tabs from table property dialog
             dialog.removeContents('advanced');
@@ -52,20 +54,25 @@
         }
     });
 
-    // temporary - for listing commands of each editor
-    /*
-	CKEDITOR.on('instanceReady', function(e) {
-    var results = [], command, instance;
-		instance = CKEDITOR.instances[e.editor.name];
-		if (instance) {
-			for (command in instance.commands) {
-				if (results.indexOf(command) == -1) results.push(command);
-			}
-		}
-		console.info(results);
-	});
-  */
-
+    CKEDITOR.on( 'instanceCreated', function( event ) {
+        var editor = event.editor,
+            element = editor.element;
+        
+        editor.config.extraPlugins = 'justify';
+        editor.on( 'configLoaded', function() {
+            editor.config.toolbar = [
+                { name: 'clipboard', groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo' ] },
+                { name: 'editing', groups: [ 'spellchecker' ], items: [ 'Scayt' ] },
+                { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
+                { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
+                { name: 'others', items: [ '-' ] },
+                '/',
+                { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Subscript', 'Superscript', '-', 'RemoveFormat' ] },
+                { name: 'paragraph', items : [ 'NumberedList','BulletedList','-','Outdent','Indent','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+            ];
+        });
+    });
+    
     //when each CKEDITOR instance is ready:
     //1. process CKEDITOR commands
     //2. set command state change listeners
@@ -91,8 +98,6 @@
                     //console.info('changed');
                     field_item.modified(true);
                 }
-
-                //Xpress.refresh();
             },
 
             getTitleNodeContainer = function (node, title) {
@@ -147,6 +152,11 @@
             Xpress.event.trigger('selection', field, field_item, editor);
         });
 
+        // ensure save button state changes on content change
+        editor.on('change', function(e) {
+            Xpress.refresh();
+        });
+        
         //overwrite CKEDITOR keyboard shortcuts
         editor.on('key', function (e) {
             var keycode, ctrl, alt;
@@ -211,7 +221,6 @@
                     });
                     if (n == find) return true;
                 };
-
             //get the first range in the selection
             ranges = e.data.selection.getRanges(true);
             range = ranges.length > 0 ? ranges[0] : null;
@@ -1034,12 +1043,10 @@
                         //initialize the ckeditor
                         CKEDITOR.inline(node, {
                             customConfig: '',
-                            //MJK              removePlugins: 'a11yhelp,about,basicstyle,bidi,blockquote,button,codemirror,colorbutton,colordialog,confighelper,contextmenu,find,flash,floatpanel,font,format,forms,horizontalrule,htmlbuttons,htmlwriter,image,insertpre,justify,liststyle,magicline,maximize,mediaembed,placeholder,menu,menubutton,panelbutton,pastefromword,preview,print,removeformat,richcombo,save,selectall,showblocks,showborders,sourcearea,specialchar,stylescombo,tabletools,toolbar',
                             forcePasteAsPlainText: true,
                             disableNativeSpellChecker: false,
-                            emailProtection: 'encode',
-                            extraPlugins: Drupal.settings.xpress.ckplugins.join(',')
-                        });
+                            emailProtection: 'encode'
+                         });
                     }
                 }
 

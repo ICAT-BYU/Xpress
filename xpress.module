@@ -307,13 +307,14 @@ function xpress_process_page($vars, $hook) {
     foreach (module_invoke_all('xpress_javascript') as $jsfile) {
         drupal_add_js($jsfile);
     }
-    
+
+/*    
     //load ckeditor plugin files and store plugin names
     foreach (module_invoke_all('xpress_ckplugin') as $plugin_name => $plugin) {
         $ckplugins[] = $plugin_name;
         drupal_add_js($plugin['path']);
     }
-    
+*/    
     
     ////////////////////////////////
     // load field independent commands
@@ -370,7 +371,6 @@ function xpress_process_page($vars, $hook) {
         'xpress' => array(
             'toolbar' => $xpress,
             'ckeditor' => drupal_get_path('module', 'ckeditor'),
-            'ckplugins' => $ckplugins,
             'commands' => $field_independent_commands
         )
     ), array(
@@ -557,24 +557,6 @@ function xpress_xpress_javascript() {
     );
 }
 
-/**
- * Implements hook_xpress_ckplugins()
- */
-function xpress_xpress_ckplugin() {
-    $jspath = '/' . drupal_get_path('module', 'xpress') . '/js/';
-    return array(
-        'listdentation' => array(
-            'name' => 'listdentation',
-            'desc' => t('Plugin for advanced list indent and outdent commands.'),
-            'path' => $jspath . 'ckeditor.listdentation.js'
-        ),
-        'linkfollow' => array(
-            'name' => 'linkfollow',
-            'desc' => t('Plugin for creating a command to follow a link within the editor.'),
-            'path' => $jspath . 'ckeditor.linkfollow.js'
-        )
-    );
-}
 
 /**
  * Implements hook_xpress_toolbar()
@@ -645,20 +627,8 @@ function xpress_xpress_toolbar() {
                                 'content editable' => TRUE,
                                 'field specific' => FALSE
                             ),
-                            
-                            // not having at least one "content edit" for the field select not to break
-                            // check further!!
-                            'edit' => array(
-                                'title' => 'link',
-                                'description' => 'link',
-                                'icon' => $path . 'link.png',
-                                'command' => 'link',
-                                'command arguments' => array(),
-                                'command enabled' => $types['text2'],
-                                'content editable' => TRUE,
-                                'field specific' => TRUE
-                            )
-                        )
+                     
+                         )
                     )
                 )
             )
