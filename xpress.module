@@ -34,6 +34,53 @@ function xpress_help($path, $arg) {
 }
 
 /**
+ * Implements hook_block_info().
+ */
+function xpress_block_info() {
+  $blocks['xpress'] = array(
+    // The name that will appear in the block list.
+    'info' => t('Xpress Edit Block'),
+    // Default setting.
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ * Prepares the contents of the block.
+ */
+function xpress_block_view($block_name = '') {
+
+        $url = $_SERVER['REQUEST_URI'];
+        if (isset($_GET["edit"])) {
+            $newUrl = parse_url($url, PHP_URL_PATH);
+            $buttonTxt = "Edit Off";
+        } else {
+            $newUrl = parse_url($url, PHP_URL_PATH) . "?edit=1";
+            $buttonTxt = "Edit On";
+         }
+      
+        $output = array(
+                'xpress output' => array(
+                        '#markup' => t("<a href='" . $newUrl . "'>" .$buttonTxt. "</a>"),
+                        '#prefix' => t("<div id='xpress-edit-button' class='xpress-edit-button'>") ,
+                        '#suffix' => t("</div>"),
+                ),
+        );
+        drupal_add_css(drupal_get_path('module', 'xpress') . '/css/xpress-edit.css');
+        switch ($block_name) {
+                case 'xpress':
+                        $block['subject'] = t('Xpress');
+                        $block['content'] = $output;
+                        return $block;
+        }
+
+}
+
+
+/**
  * Implements hook_menu()
  * Menu items added for AJAX calls.
  * @return array
@@ -598,43 +645,32 @@ function xpress_xpress_toolbar() {
      * tabs - toolbar definition for tabs
      */
     $toReturn = array(
-        
-        'tabs' => array(
-            'format' => array(
-                'title' => 'Content',
-                'description' => 'Basic text formatting control',
-                'icon' => $path . 'content.png',
-                'weight' => -10,
-                'visible' => TRUE,
-                'items' => array(
-                    'edit content' => array(
-                        'items' => array(
-                            'contentsettings' => array(
-                                'title' => 'Edit Page',
-                                'description' => 'Open the settings window',
-                                'icon' => $path . 'gear.png',
-                                'command' => 'editcontent',
-                                'command arguments' => array(),
-                                'field specific' => FALSE,
-                                'class' => 'settings-shadowbox'
-                            ),
-                            
-                            'contentsave' => array(
-                                'title' => 'Save',
-                                'description' => 'Save changes',
-                                'icon' => $path . 'content-save.png',
-                                'command arguments' => array(),
-                                'command' => 'contentsave',
-                                'content editable' => TRUE,
-                                'field specific' => FALSE
-                            ),
-                     
-                         )
-                    )
-                )
-            )
-            
-        )
+        'quicklinks' => array(
+          'content' => array(
+            'weight' => -10,
+            'items' => array(
+                'contentsettings' => array(
+                    'title' => 'Edit Page',
+                    'description' => 'Open the settings window',
+                    'icon' => $path . 'gear.png',
+                    'command' => 'editcontent',
+                    'command arguments' => array(),
+                    'field specific' => FALSE,
+                    'class' => 'settings-shadowbox'
+                ),
+                
+                'contentsave' => array(
+                    'title' => 'Save',
+                    'description' => 'Save changes',
+                    'icon' => $path . 'content-save.png',
+                    'command arguments' => array(),
+                    'command' => 'contentsave',
+                    'content editable' => TRUE,
+                    'field specific' => FALSE
+                ),
+            ),
+           ),
+        ),   
     );
     
     global $theme_key;
@@ -692,7 +728,7 @@ function xpress_xpress_toolbar() {
         }
         
         if (!empty($onestopbuttons)) {
-            $toReturn['tabs']['format']['items']['create content onestop']['items'] = $onestopbuttons;
+            $toReturn['quicklinks']['create content onestop']['items'] = $onestopbuttons;
         }
     } elseif ($theme_key === 'training') {
         
@@ -748,11 +784,10 @@ function xpress_xpress_toolbar() {
         }
         
         if (!empty($trainingbuttons)) {
-            $toReturn['tabs']['format']['items']['create content onestop']['items'] = $trainingbuttons;
+            $toReturn['quicklinks']['create content training']['items'] = $trainingbuttons;
         }
     }
-    
-    
+   
     return $toReturn;
     
 }
@@ -784,21 +819,6 @@ function xpress_xpress_writer() {
         )
     );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -1582,6 +1602,18 @@ class Xpress {
             'update',
             'delete'
         ));
+
+        // CHECK for _GET variable "edit" in the URL before enabling Xpress
+        if(!isset($_GET["edit"])) { return false; }
+        
+        // Pad the toolbar more if the admin_menu_toolbar is being displayed (otherwise the xpress toolbar is obscured)
+        if (module_exists("admin_menu_toolbar")) {
+            global $user;
+            if (in_array('administrator', array_values($user->roles))) {
+                drupal_add_css(drupal_get_path('module', 'xpress') . '/css/xpress-admin_menu_toolbar.css');
+            }
+        }
+       
         if (!$permission)
             return false;
         

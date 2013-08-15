@@ -61,14 +61,12 @@
         editor.config.extraPlugins = 'justify';
         editor.on( 'configLoaded', function() {
             editor.config.toolbar = [
-                { name: 'clipboard', groups: [ 'clipboard', 'undo' ], items: [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo' ] },
-                { name: 'editing', groups: [ 'spellchecker' ], items: [ 'Scayt' ] },
-                { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
-                { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
-                { name: 'others', items: [ '-' ] },
-                '/',
-                { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Subscript', 'Superscript', '-', 'RemoveFormat' ] },
-                { name: 'paragraph', items : [ 'NumberedList','BulletedList','-','Outdent','Indent','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'] },
+                { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline','-','JustifyLeft','JustifyCenter','JustifyRight'] },
+                { name: 'links',       items: [ 'Link', 'Unlink' ] },
+                { name: 'insert',      items: [  'Table'] },
+                { name: 'others',      items: [ '-' ] },
+                { name: 'paragraph',   items: [ 'NumberedList','BulletedList','-','Outdent','Indent'] },
+                { name: 'clipboard',   items: [ 'Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo' ] },
             ];
         });
     });
@@ -157,40 +155,6 @@
             Xpress.refresh();
         });
         
-        //overwrite CKEDITOR keyboard shortcuts
-        editor.on('key', function (e) {
-            var keycode, ctrl, alt;
-
-            //get ckeditor keycode
-            keycode = e.data.keyCode;
-
-            //determine which control keys have been pressed
-            //simultaneously determine key pressed code
-            if (keycode > CKEDITOR.ALT) {
-                keycode -= CKEDITOR.ALT;
-                alt = true;
-            }
-            if (keycode > CKEDITOR.SHIFT) keycode -= CKEDITOR.SHIFT;
-            if (keycode > CKEDITOR.CTRL) {
-                keycode -= CKEDITOR.CTRL;
-                ctrl = true;
-            }
-
-            //if ctrl key or alt key are pressed, or if outside the editable scope
-            //region then stop the event from firing within ckeditor
-            if (ctrl || alt || !selectionInEditableContainer(editor.getSelection())) {
-                e.stop();
-                e.cancel();
-
-                //event not stopped, change made
-            } else {
-                //update related field items and note modification. The timeout allows
-                //time for the key press to make changes to the editor (if any)
-                setTimeout(syncFieldItems, 0);
-            }
-
-        });
-
         //after a command is executed through the CKEDITOR, sync all nodes that use
         //this same FieldItem object.
         editor.on('afterCommandExec', function () {
