@@ -501,7 +501,7 @@ function xpress_preprocess_node(&$variables, $hook) {
  * is given attributes and classes using hook_preprocess_node and hook_preprocess_page.
  */
 function xpress_preprocess_field(&$variables, $hook) {
-  if($variables['element']['#entity_type']==='node'){
+    
     //store a reference to the field Node
     $o = $variables['element']['#object'];
     
@@ -581,7 +581,6 @@ function xpress_preprocess_field(&$variables, $hook) {
             }
         }
     }
-  }
     //kpr($variables);
 }
 

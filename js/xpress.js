@@ -153,6 +153,7 @@
         // ensure save button state changes on content change
         editor.on('change', function(e) {
             Xpress.refresh();
+            syncFieldItems();
         });
         
         //after a command is executed through the CKEDITOR, sync all nodes that use
@@ -1848,7 +1849,8 @@
                         ct.attr('title', config.title);
                         ct.tipsy({
                             opacity: 1,
-                            offset: 5
+                            offset: 5,
+                            gravity: 'nw'
                         });
                     }
                     break;
