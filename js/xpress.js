@@ -7,6 +7,19 @@
         Page, //stores data about the page
         bod, originalMarginTop;
 
+    // check that data has been saved before exit    
+    window.onbeforeunload = function() {
+        var CKEDITOR   = window.parent.CKEDITOR;
+        var needSave = false;
+        // Check for Dirty values to see if Save should be active
+        for(var instanceName in CKEDITOR.instances) {
+            if (CKEDITOR.instances[instanceName].checkDirty()) needSave = true;
+        }
+        if (needSave) {
+            return "There is unsaved data on the page.\nWhat shall we do?";
+        } 
+    };
+        
     //////////////////////////////////
     //								//
     //		CKEDITOR CONFIGURATION  //
