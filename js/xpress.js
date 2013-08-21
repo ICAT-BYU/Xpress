@@ -25,13 +25,28 @@
         //remove unused fields from table property dialog
         switch (name) {
         case 'link':
-            //remove fields options from link type drop down
-            tab = dialog.getContents('info');
-            field = tab.get('linkType');
-            field.items.splice(1, 1);
 
+            infoTab = dialog.getContents('info');
+            targetTab = dialog.getContents('target');
+        
+            // Limit LINK dialog to URL (remove anchor within document and email)
+            //tab.remove('linkType');
+            linkTypeField = infoTab.get('linkType');
+            linkTypeField.items.splice(1, 2);
+
+            // Limit PROTOCOL dialog to URL (remove anchor within document and email)
+            //tab.remove('protocol');
+            protocolField = infoTab.get('protocol');
+            protocolField.items.splice(2, 3);
+
+            // Limit TARGET dialog to notSet and _blank (remove frame, _top, _parent, _self, and popup)
+            var targetField = targetTab.get('linkTargetType');
+            targetField['items'].splice(1, 2);
+            targetField['items'].splice(2, 3); 
+            
+            
             //remove target and advanced tabs
-            dialog.removeContents('target');
+            //dialog.removeContents('target');
             dialog.removeContents('advanced');
             break;
 
