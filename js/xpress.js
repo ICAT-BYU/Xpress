@@ -42,12 +42,12 @@
             infoTab = dialog.getContents('info');
             targetTab = dialog.getContents('target');
         
-            // Limit LINK dialog to URL (remove anchor within document and email)
+            // Limit LINK dialog to URL (remove email)
             //tab.remove('linkType');
             linkTypeField = infoTab.get('linkType');
-            linkTypeField.items.splice(1, 2);
+            linkTypeField.items.splice(2, 1);
 
-            // Limit PROTOCOL dialog to URL (remove anchor within document and email)
+            // Limit PROTOCOL dialog to URL (remove ftp, news, and other)
             //tab.remove('protocol');
             protocolField = infoTab.get('protocol');
             protocolField.items.splice(2, 3);
@@ -90,7 +90,7 @@
         editor.on( 'configLoaded', function() {
             editor.config.toolbar = [
                 { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline','-','JustifyLeft','JustifyCenter','JustifyRight'] },
-                { name: 'links',       items: [ 'Link', 'Unlink' ] },
+                { name: 'links',       items: [ 'Link', 'Unlink', 'Anchor' ] },
                 { name: 'insert',      items: [  'Table'] },
                 { name: 'others',      items: [ '-' ] },
                 { name: 'paragraph',   items: [ 'NumberedList','BulletedList','-','Outdent','Indent'] },
