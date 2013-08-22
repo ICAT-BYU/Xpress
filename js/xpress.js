@@ -87,6 +87,9 @@
             element = editor.element;
         
         editor.config.extraPlugins = 'justify';
+        editor.config.justifyClasses = [ 'rteleft', 'rtecenter', 'rteright', 'rtejustify' ];
+        editor.config.allowedContent = true;
+        
         editor.on( 'configLoaded', function() {
             editor.config.toolbar = [
                 { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline','-','JustifyLeft','JustifyCenter','JustifyRight'] },
