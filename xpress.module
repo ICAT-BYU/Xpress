@@ -678,7 +678,7 @@ function xpress_xpress_toolbar() {
     if ($theme_key === 'onestop') {
         $onestopbuttons = array();
         // checks if the user has permision to add content
-        if (rights_and_permission_user_group_has_right('tasks', 'create', $user)) {
+        if (node_access('create', 'tasks', $user)) {
             $onestopbuttons['task'] = array(
                 'title' => 'Create Onestop Task',
                 'description' => 'Create new Onestop Task',
@@ -688,7 +688,7 @@ function xpress_xpress_toolbar() {
             );
         }
         
-        if (rights_and_permission_user_group_has_right('checklists', 'create', $user)) {
+        if (node_access('create', 'checklists', $user)) {
             $onestopbuttons['checkslist'] = array(
                 'title' => 'Create Onestop Checklist',
                 'description' => 'Create new Onestop Checklist',
@@ -698,7 +698,7 @@ function xpress_xpress_toolbar() {
             );
         }
         
-        if (rights_and_permission_user_group_has_right('offices', 'create', $user)) {
+        if (node_access('create', 'offices', $user)) {
             $onestopbuttons['office'] = array(
                 'title' => 'Create Onestop Office',
                 'description' => 'Create new Onestop Office',
@@ -707,7 +707,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (rights_and_permission_user_group_has_right('onestop_ad_small', 'create', $user)) {
+        if (node_access('create', 'onestop_ad_small', $user)) {
             $onestopbuttons['adsmall'] = array(
                 'title' => 'Create Onestop Ad Small',
                 'description' => 'Create new Onestop Ad Small',
@@ -716,7 +716,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (rights_and_permission_user_group_has_right('onestop_ad_large', 'create', $user)) {
+        if (node_access('create', 'onestop_ad_large', $user)) {
             $onestopbuttons['adlarge'] = array(
                 'title' => 'Create Onestop Ad Large',
                 'description' => 'Create new Onestop Ad Large',
@@ -732,7 +732,7 @@ function xpress_xpress_toolbar() {
     } elseif ($theme_key === 'training') {
         
         // checks if the user has permision to add content
-        if (rights_and_permission_user_group_has_right('admissions', 'create', $user)) {
+        if (node_access('create', 'admissions', $user)) {
             $trainingbuttons['admissions'] = array(
                 'title' => 'Create Topic Page',
                 'description' => 'Create new Topic Page',
@@ -742,7 +742,7 @@ function xpress_xpress_toolbar() {
             );
         }
         
-        if (rights_and_permission_user_group_has_right('financialaid', 'create', $user)) {
+        if (node_access('create', 'financialaid', $user)) {
             $trainingbuttons['financialaid'] = array(
                 'title' => 'Create Topic Page',
                 'description' => 'Create new Topic Page',
@@ -752,7 +752,7 @@ function xpress_xpress_toolbar() {
             );
         }
         
-        if (rights_and_permission_user_group_has_right('registrar', 'create', $user)) {
+        if (node_access('create', 'registrar', $user)) {
             $trainingbuttons['registrar'] = array(
                 'title' => 'Create Topic Page',
                 'description' => 'Create new Topic Page',
@@ -762,7 +762,7 @@ function xpress_xpress_toolbar() {
             );
         }
         
-        if (rights_and_permission_user_group_has_right('training_content_section', 'create', $user)) {
+        if (node_access('create', 'training_content_section', $user)) {
             $trainingbuttons['training_content_section'] = array(
                 'title' => 'Create Content Section',
                 'description' => 'Create new Content Section',
@@ -772,7 +772,7 @@ function xpress_xpress_toolbar() {
             );
         }
         
-        if (rights_and_permission_user_group_has_right('training_positions_page', 'create', $user)) {
+        if (node_access('create', 'training_positions_page', $user)) {
             $trainingbuttons['training_positions_page'] = array(
                 'title' => 'Create Positions Page',
                 'description' => 'Create new Positions Page',

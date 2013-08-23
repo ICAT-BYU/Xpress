@@ -7,6 +7,6 @@ configure = admin/config/content/xpress/
 
 dependencies[] = empty_fields
 dependencies[] = entityreference
-dependencies[] = rights_and_permissions
+
 
 files[] = xpress.module
