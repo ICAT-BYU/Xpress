@@ -60,6 +60,21 @@
 
                         //get the content via the field item reader
                         content = items[j].read();
+                        
+                        // parse out the data-cke-realelement tags for ANCHORS (embedded in <img> tags)
+                        imgRegEx = /<img[^>]*>/g;
+                        if (imgTags = content.match(imgRegEx)) {
+                            for(i=0; i<imgTags.length; ++i) {
+                                elementRegEx = /data-cke-realelement="([^"]*)"/g;
+                                parts = elementRegEx.exec(imgTags[i]); // this returns the contents of data-cke-realelement="" to parts[1] - bracketed regex
+                                if ((parts !== null) && (typeof (parts[1]) !== 'undefined') && (parts[1] !== null)) {
+                                    replacement = decodeURIComponent(parts[1])
+                                    content = content.replace(imgTags[i],replacement);
+                                    parts.length = 0;
+                                }
+                             }
+                        }
+                        
                         //add relevant update data
                         data[field_data.id][field_data.field_name].push({
                             value: content,

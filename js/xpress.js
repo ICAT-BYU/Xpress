@@ -11,12 +11,21 @@
     window.onbeforeunload = function() {
         var CKEDITOR   = window.parent.CKEDITOR;
         var needSave = false;
+        var commentArray = [
+                            'Smokey Bear says, "Only you can prevent lost changes."', 
+                            'Ere you made a change this morning,\nDid you think to save?', 
+                            'I don’t always save my changes...\nbut when I do, I use the SAVE button.',
+                            'No more rhymes now. I mean it!\nDoes anyone want a peanut?',
+                            'We noticed you’ve made some changes.\nYou may want to save them.',
+                            'Hey, dude, don’t make it bad\nTake a second and make it better\nRemember to save it onto that site\nThen you just might\nBe making it better.'
+                            ];
+        var comment = commentArray[Math.floor(Math.random() * commentArray.length)];
         // Check for Dirty values to see if Save should be active
         for(var instanceName in CKEDITOR.instances) {
             if (CKEDITOR.instances[instanceName].checkDirty()) needSave = true;
         }
         if (needSave) {
-            return "There is unsaved data on the page.\nWhat shall we do?";
+            return comment;
         } 
     };
         
