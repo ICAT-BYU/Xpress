@@ -1195,16 +1195,19 @@ function xpress_get_commands($group = TRUE, $type = NULL) {
  * @param node The node object to check permissions against.
  * @return Returns an associative array listing CRUD permissions.
  */
-function xpress_get_permissions($node) {
+function xpress_get_permissions($node) { 
     $access = array();
-    if (node_access('create', $node))
-        $access[] = 'create';
-    if (node_access('view', $node))
-        $access[] = 'view';
-    if (node_access('update', $node))
-        $access[] = 'update';
-    if (node_access('delete', $node))
-        $access[] = 'delete';
+
+    if (isset($node->nid)) {  
+    	if (node_access('create', $node))
+        	$access[] = 'create';
+    	if (node_access('view', $node))
+        	$access[] = 'view';
+    	if (node_access('update', $node))
+        	$access[] = 'update';
+    	if (node_access('delete', $node))
+        	$access[] = 'delete';
+	}
 }
 
 /**
@@ -1212,16 +1215,22 @@ function xpress_get_permissions($node) {
  * @param node The Drupal node object to check permissions on.
  * @param mixed A string or an array of strings to check node operation permissions on.
  */
-function xpress_has_permission($node, $ops) {
-    if (is_string($ops))
-        $ops = array(
-            $ops
-        );
-    for ($i = 0; $i < count($ops); $i++) {
-        if (node_access($ops[$i], $node))
-            return true;
+function xpress_has_permission($node, $ops) { 
+
+    if (isset($node->nid)) {
+       if (is_string($ops))
+           $ops = array(
+               $ops
+           );
+       for ($i = 0; $i < count($ops); $i++) {
+           if (node_access($ops[$i], $node))
+               return true;
+       }
+       return false;
     }
-    return false;
+
+    return true;
+
 }
 
 /**
