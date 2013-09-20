@@ -52,21 +52,35 @@ function xpress_block_info() {
  * Prepares the contents of the block.
  */
 function xpress_block_view($block_name = '') {
-
+        $editButtonPre = "<div id='xpress-edit-button' class='xpress-edit-button'>";
+        $gearButtonPre = "<div id='xpress-gear-button' class='xpress-gear-button'>";
+        $gearButton = "";
+        $editButton = "";
+        
+        // Get Node Number
+        if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2) ) {
+            $node = arg(1);
+            $gearPath = "/node/" .$node. "/edit";
+            $gearIcon  = "<img class='xpress-gear' src='/" . drupal_get_path('module', 'xpress') . "/icons/gear.png'>";
+            $gearButton = $gearButtonPre . "<a href='" . $gearPath . "'>" .$gearIcon. "</a>" . "</div>";
+        }
+        
         $url = $_SERVER['REQUEST_URI'];
         if (isset($_GET["edit"])) {
             $newUrl = parse_url($url, PHP_URL_PATH);
             $buttonTxt = "Edit Off";
+            $gearButton = "";
         } else {
             $newUrl = parse_url($url, PHP_URL_PATH) . "?edit=1";
             $buttonTxt = "Edit On";
-         }
+        }
+        $editButton = $editButtonPre . "<a href='" . $newUrl . "'>" .$buttonTxt. "</a>" . "</div>";
       
         $output = array(
                 'xpress output' => array(
-                        '#markup' => t("<a href='" . $newUrl . "'>" .$buttonTxt. "</a>"),
-                        '#prefix' => t("<div id='xpress-edit-button' class='xpress-edit-button'>") ,
-                        '#suffix' => t("</div>"),
+                        '#markup' => t($editButton . $gearButton),
+                        '#prefix' => t("") ,
+                        '#suffix' => t(""),
                 ),
         );
         drupal_add_css(drupal_get_path('module', 'xpress') . '/css/xpress-edit.css');
@@ -1780,7 +1794,7 @@ class XpressPlaceholder extends EmptyFieldHandler {
      * @return array
      *   A FAPI array to be used in configuration of this empty text plugin.
      */
-    public function form($context) {
+    public function form() {
         $form['empty_class'] = array(
             '#type' => 'textfield',
             '#title' => t('CSS class name'),
