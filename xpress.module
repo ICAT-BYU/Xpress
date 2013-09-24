@@ -689,7 +689,7 @@ function xpress_xpress_toolbar() {
     global $theme_key;
     global $user;
 
-// -------------- BYU ONESTOPG SITE ---------------------        
+// -------------- BYU ONESTOP SITE ---------------------        
     if ($theme_key === 'onestop') {
         $onestopbuttons = array();
         // checks if the user has permision to add content
@@ -759,7 +759,7 @@ function xpress_xpress_toolbar() {
             );
         }
         
-        if (node_access('create', 'financialaid', $user)) {
+        if (node_access('create', 'financial_aid', $user)) {
             $trainingbuttons['financialaid'] = array(
                 'title' => 'Create Financial Aid Topic Page',
                 'description' => 'Create new Financial Aid Topic Page',
@@ -797,7 +797,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (node_access('create', 'studentservices', $user)) {
+        if (node_access('create', 'student_services', $user)) {
             $trainingbuttonsOS['studentservices'] = array(
                 'title' => 'Create Student Services Topic Page',
                 'description' => 'Create new Student Services Topic Page',
@@ -807,7 +807,7 @@ function xpress_xpress_toolbar() {
             );
         }
         // -------------------- OTHER ----------------------------
-        if (node_access('create', 'executivedirector', $user)) {
+        if (node_access('create', 'executive_director', $user)) {
             $trainingbuttonsOT['executivedirector'] = array(
                 'title' => 'Create Executive Director Topic Page',
                 'description' => 'Create new Executive Director Topic Page',
@@ -816,7 +816,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (node_access('create', 'financialservices', $user)) {
+        if (node_access('create', 'financial_services', $user)) {
             $trainingbuttonsOT['financialservices'] = array(
                 'title' => 'Create Financial Services Topic Page',
                 'description' => 'Create new Financial Services Topic Page',
@@ -834,7 +834,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (node_access('create', 'technologyapplications', $user)) {
+        if (node_access('create', 'technology_applications', $user)) {
             $trainingbuttonsOT['technologyapplications'] = array(
                 'title' => 'Create Technology Applications Topic Page',
                 'description' => 'Create new Technology Applications Topic Page',
@@ -843,7 +843,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (node_access('create', 'treasuryservices', $user)) {
+        if (node_access('create', 'treasury_services', $user)) {
             $trainingbuttonsOT['treasuryservices'] = array(
                 'title' => 'Create Treasury Services Topic Page',
                 'description' => 'Create new Treasury Services Topic Page',
@@ -854,7 +854,7 @@ function xpress_xpress_toolbar() {
         }
         
         // -------------------- MISC ----------------------------
-        if (node_access('create', 'assessment', $user)) {
+        if (node_access('create', 'quiz', $user)) {
             $trainingbuttonsMSC['assessment'] = array(
                 'title' => 'Create Assessment',
                 'description' => 'Create new Assessment',
@@ -863,7 +863,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (node_access('create', 'saasposition', $user)) {
+        if (node_access('create', 'saas_position', $user)) {
             $trainingbuttonsMSC['saasposition'] = array(
                 'title' => 'Create SAAS Position',
                 'description' => 'Create new SAAS Position',
@@ -872,7 +872,7 @@ function xpress_xpress_toolbar() {
                 'field specific' => FALSE
             );
         }
-        if (node_access('create', 'newspost', $user)) {
+        if (node_access('create', 'training_news_post', $user)) {
             $trainingbuttonsMSC['newspost'] = array(
                 'title' => 'Create News Post',
                 'description' => 'Create new News Post',
