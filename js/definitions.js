@@ -179,10 +179,11 @@
             return Xpress.command.ENABLED;
         }
     });
-
+    
+    // ----------------- TRAINING --------------------
     Xpress.command.register('admissions', {
         exec: function (field, item, editor, params) {
-            window.location = '/node/add/admissions?location=' + window.location; /* insert url here */
+            window.location = '/node/add/admissions';
 
         },
         state: function (field, item, editor) {
@@ -192,7 +193,7 @@
 
     Xpress.command.register('financialaid', {
         exec: function (field, item, editor, params) {
-            window.location = '/node/add/financialaid?location=' + window.location; /* insert url here */
+            window.location = '/node/add/financial-aid';
 
         },
         state: function (field, item, editor) {
@@ -202,27 +203,109 @@
 
     Xpress.command.register('registrar', {
         exec: function (field, item, editor, params) {
-            window.location = '/node/add/registrar?location=' + window.location; /* insert url here */
+            window.location = '/node/add/registrar';
 
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
         }
     });
-
-    Xpress.command.register('training_content_section', {
+    // ----------------- TRAINING ONESTOP --------------------
+    Xpress.command.register('counseling', {
         exec: function (field, item, editor, params) {
-            window.location = '/node/add/training_content_section?location=' + window.location; /* insert url here */
+            window.location = '/node/add/counseling';
 
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
         }
     });
-
-    Xpress.command.register('training_positions_page', {
+    Xpress.command.register('processing', {
         exec: function (field, item, editor, params) {
-            window.location = '/node/add/training_positions_page?location=' + window.location; /* insert url here */
+            window.location = '/node/add/processing';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    Xpress.command.register('studentservices', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/student-services';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    // -------------------- TRAINING OTHER ----------------------------
+    Xpress.command.register('executivedirector', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/executive-director';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    Xpress.command.register('financialservices', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/financial-services';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    Xpress.command.register('icat', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/icat';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    Xpress.command.register('technologyapplications', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/technology-applications';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    Xpress.command.register('treasuryservices', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/treasury-services';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    // -------------------- TRAINING MISC ----------------------------
+    Xpress.command.register('assessment', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/quiz';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    Xpress.command.register('saasposition', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/saas-position';
+
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
+    Xpress.command.register('newspost', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/training-news-post';
 
         },
         state: function (field, item, editor) {

@@ -688,7 +688,8 @@ function xpress_xpress_toolbar() {
     
     global $theme_key;
     global $user;
-    
+
+// -------------- BYU ONESTOPG SITE ---------------------        
     if ($theme_key === 'onestop') {
         $onestopbuttons = array();
         // checks if the user has permision to add content
@@ -743,14 +744,16 @@ function xpress_xpress_toolbar() {
         if (!empty($onestopbuttons)) {
             $toReturn['quicklinks']['create content onestop']['items'] = $onestopbuttons;
         }
-    } elseif ($theme_key === 'training') {
+        
+// -------------- SAAS TRAINING SITE ---------------------        
+    } elseif ($theme_key === 'thehub') {
         
         // checks if the user has permision to add content
         if (node_access('create', 'admissions', $user)) {
             $trainingbuttons['admissions'] = array(
-                'title' => 'Create Topic Page',
-                'description' => 'Create new Topic Page',
-                'icon' => $path . 'content-insert-admissions.png',
+                'title' => 'Create Admissions Topic Page',
+                'description' => 'Create new Admissions Topic Page',
+                'icon' => $path . 'button-admissions.png',
                 'command' => 'admissions',
                 'field specific' => FALSE
             );
@@ -758,9 +761,9 @@ function xpress_xpress_toolbar() {
         
         if (node_access('create', 'financialaid', $user)) {
             $trainingbuttons['financialaid'] = array(
-                'title' => 'Create Topic Page',
-                'description' => 'Create new Topic Page',
-                'icon' => $path . 'content-insert-financialaid.png',
+                'title' => 'Create Financial Aid Topic Page',
+                'description' => 'Create new Financial Aid Topic Page',
+                'icon' => $path . 'button-financialaid.png',
                 'command' => 'financialaid',
                 'field specific' => FALSE
             );
@@ -768,36 +771,128 @@ function xpress_xpress_toolbar() {
         
         if (node_access('create', 'registrar', $user)) {
             $trainingbuttons['registrar'] = array(
-                'title' => 'Create Topic Page',
-                'description' => 'Create new Topic Page',
-                'icon' => $path . 'content-insert-registrar.png',
+                'title' => 'Create Registrar Topic Page',
+                'description' => 'Create new Registrar Topic Page',
+                'icon' => $path . 'button-registrar.png',
                 'command' => 'registrar',
                 'field specific' => FALSE
             );
         }
-        
-        if (node_access('create', 'training_content_section', $user)) {
-            $trainingbuttons['training_content_section'] = array(
-                'title' => 'Create Content Section',
-                'description' => 'Create new Content Section',
-                'icon' => $path . 'content-insert-babyblue.png',
-                'command' => 'training_content_section',
+        // ----------------- ONESTOP --------------------
+        if (node_access('create', 'counseling', $user)) {
+            $trainingbuttonsOS['counseling'] = array(
+                'title' => 'Create Counseling Topic Page',
+                'description' => 'Create new Counseling Topic Page',
+                'icon' => $path . 'button-counseling.png',
+                'command' => 'counseling',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'processing', $user)) {
+            $trainingbuttonsOS['processing'] = array(
+                'title' => 'Create Processing Topic Page',
+                'description' => 'Create new Processing Topic Page',
+                'icon' => $path . 'button-processing.png',
+                'command' => 'processing',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'studentservices', $user)) {
+            $trainingbuttonsOS['studentservices'] = array(
+                'title' => 'Create Student Services Topic Page',
+                'description' => 'Create new Student Services Topic Page',
+                'icon' => $path . 'button-studentservices.png',
+                'command' => 'studentservices',
+                'field specific' => FALSE
+            );
+        }
+        // -------------------- OTHER ----------------------------
+        if (node_access('create', 'executivedirector', $user)) {
+            $trainingbuttonsOT['executivedirector'] = array(
+                'title' => 'Create Executive Director Topic Page',
+                'description' => 'Create new Executive Director Topic Page',
+                'icon' => $path . 'button-executivedirector.png',
+                'command' => 'executivedirector',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'financialservices', $user)) {
+            $trainingbuttonsOT['financialservices'] = array(
+                'title' => 'Create Financial Services Topic Page',
+                'description' => 'Create new Financial Services Topic Page',
+                'icon' => $path . 'button-financialservices.png',
+                'command' => 'financialservices',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'icat', $user)) {
+            $trainingbuttonsOT['icat'] = array(
+                'title' => 'Create ICAT Topic Page',
+                'description' => 'Create new ICAT Topic Page',
+                'icon' => $path . 'button-icat.png',
+                'command' => 'icat',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'technologyapplications', $user)) {
+            $trainingbuttonsOT['technologyapplications'] = array(
+                'title' => 'Create Technology Applications Topic Page',
+                'description' => 'Create new Technology Applications Topic Page',
+                'icon' => $path . 'button-technologyapplications.png',
+                'command' => 'technologyapplications',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'treasuryservices', $user)) {
+            $trainingbuttonsOT['treasuryservices'] = array(
+                'title' => 'Create Treasury Services Topic Page',
+                'description' => 'Create new Treasury Services Topic Page',
+                'icon' => $path . 'button-treasuryservices.png',
+                'command' => 'treasuryservices',
                 'field specific' => FALSE
             );
         }
         
-        if (node_access('create', 'training_positions_page', $user)) {
-            $trainingbuttons['training_positions_page'] = array(
-                'title' => 'Create Positions Page',
-                'description' => 'Create new Positions Page',
-                'icon' => $path . 'content-insert-babyblue.png',
-                'command' => 'training_positions_page',
+        // -------------------- MISC ----------------------------
+        if (node_access('create', 'assessment', $user)) {
+            $trainingbuttonsMSC['assessment'] = array(
+                'title' => 'Create Assessment',
+                'description' => 'Create new Assessment',
+                'icon' => $path . 'button-assessment.png',
+                'command' => 'assessment',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'saasposition', $user)) {
+            $trainingbuttonsMSC['saasposition'] = array(
+                'title' => 'Create SAAS Position',
+                'description' => 'Create new SAAS Position',
+                'icon' => $path . 'button-saasposition.png',
+                'command' => 'saasposition',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'newspost', $user)) {
+            $trainingbuttonsMSC['newspost'] = array(
+                'title' => 'Create News Post',
+                'description' => 'Create new News Post',
+                'icon' => $path . 'button-newspost.png',
+                'command' => 'newspost',
                 'field specific' => FALSE
             );
         }
         
         if (!empty($trainingbuttons)) {
             $toReturn['quicklinks']['create content training']['items'] = $trainingbuttons;
+        }
+        if (!empty($trainingbuttonsOS)) {
+            $toReturn['quicklinks']['create content training onestop']['items'] = $trainingbuttonsOS;
+        }
+        if (!empty($trainingbuttonsOT)) {
+            $toReturn['quicklinks']['create content training other']['items'] = $trainingbuttonsOT;
+        }
+        if (!empty($trainingbuttonsMSC)) {
+            $toReturn['quicklinks']['create content training misc']['items'] = $trainingbuttonsMSC;
         }
     }
    
