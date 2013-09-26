@@ -98,6 +98,10 @@
         editor.config.extraPlugins = 'justify';
         editor.config.justifyClasses = [ 'rteleft', 'rtecenter', 'rteright', 'rtejustify' ];
         editor.config.allowedContent = true;
+
+        editor.on('instanceReady', function(e) {
+            $(e.editor.element.$).removeAttr("title");
+        });
         
         editor.on( 'configLoaded', function() {
             editor.config.toolbar = [
