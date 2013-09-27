@@ -39,6 +39,10 @@
 	float: left;
 	border: none;
 }
+#XpressToolbar img {
+	width:26px;
+    height:26px;
+}
 
 /* DISABLED */
 #XpressToolbar a.xpress-disabled {
