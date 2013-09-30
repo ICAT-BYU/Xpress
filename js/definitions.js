@@ -75,6 +75,12 @@
                              }
                         }
                         
+                        // SPECIFIC TO SASS TRAINING - make sure editing Display Title elements remain flat text 
+                        if ((item_data.field_data_type == "text") && (item_data.field_name == "field_display_title")) {
+                            var remTags = /(<([^>]+)>)/ig; // regex for removing HTML tags
+                            content = content.replace(remTags, '');
+                        }
+                        
                         //add relevant update data
                         data[field_data.id][field_data.field_name].push({
                             value: content,
