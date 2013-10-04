@@ -56,13 +56,16 @@ function xpress_block_view($block_name = '') {
         $gearButtonPre = "<div id='xpress-gear-button' class='xpress-gear-button'>";
         $gearButton = "";
         $editButton = "";
+        $canEdit = 0;
         
         // Get Node Number
         if ( arg(0) == 'node' && is_numeric(arg(1)) && ! arg(2) ) {
-            $node = arg(1);
-            $gearPath = "/node/" .$node. "/edit";
+            $nodeID = arg(1);
+            $gearPath = "/node/" .$nodeID. "/edit";
             $gearIcon  = "<img class='xpress-gear' src='/" . drupal_get_path('module', 'xpress') . "/icons/gear.png'>";
             $gearButton = $gearButtonPre . "<a href='" . $gearPath . "'>" .$gearIcon. "</a>" . "</div>";
+            $node = node_load($nodeID);
+            if (node_access('update', $node))  { $canEdit = 1; }
         }
         
         $url = $_SERVER['REQUEST_URI'];
@@ -75,14 +78,24 @@ function xpress_block_view($block_name = '') {
             $buttonTxt = "Edit On";
         }
         $editButton = $editButtonPre . "<a href='" . $newUrl . "'>" .$buttonTxt. "</a>" . "</div>";
-      
-        $output = array(
-                'xpress output' => array(
-                        '#markup' => t($editButton . $gearButton),
-                        '#prefix' => t("") ,
-                        '#suffix' => t(""),
-                ),
-        );
+
+        if ($canEdit == 1) {
+            $output = array(
+                    'xpress output' => array(
+                            '#markup' => t($editButton . $gearButton),
+                            '#prefix' => t("") ,
+                            '#suffix' => t(""),
+                    ),
+            );
+        } else {
+            $output = array(
+                    'xpress output' => array(
+                            '#markup' => t(""),
+                            '#prefix' => t("") ,
+                            '#suffix' => t(""),
+                    ),
+            );
+        }
         drupal_add_css(drupal_get_path('module', 'xpress') . '/css/xpress-edit.css');
         switch ($block_name) {
                 case 'xpress':
