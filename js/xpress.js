@@ -56,10 +56,10 @@
             linkTypeField = infoTab.get('linkType');
             linkTypeField.items.splice(2, 1);
 
-            // Limit PROTOCOL dialog to URL (remove ftp, news, and other)
+            // Limit PROTOCOL dialog to URL (remove ftp, and news)
             //tab.remove('protocol');
             protocolField = infoTab.get('protocol');
-            protocolField.items.splice(2, 3);
+            protocolField.items.splice(2, 2);
 
             // Limit TARGET dialog to notSet and _blank (remove frame, _top, _parent, _self, and popup)
             var targetField = targetTab.get('linkTargetType');

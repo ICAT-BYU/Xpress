@@ -1641,6 +1641,10 @@ function xpress_ajax($op) {
                             }
                         }
                     }
+                    // create REVISION info
+                    global $user;
+                    $node->revision = 1;
+                    $node->log = "Xpress update by " .$user->name. " on " . date('d-M-Y');
                     
                     //save the changes to the node
                     node_save($node);
