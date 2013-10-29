@@ -106,7 +106,6 @@
                 data: data,
                 page: Xpress.pageId()
             }, function () {
-                //console.info('ajax success');
             });
             
             // reset dirty values after save
@@ -117,7 +116,6 @@
         },
         state: function (field, item, editor) {
             var needSave = false;
-            // Check for Dirty values to see if Save should be active
             for(var instanceName in CKEDITOR.instances) {
                 if (CKEDITOR.instances[instanceName].checkDirty()) needSave = true;
             }
@@ -131,17 +129,23 @@
     Xpress.command.register('editcontent', {
         exec: function (field, item, editor, params) {
             window.location = '/node/' + pagenodeid + '/edit';
-            //window.location = '/vanilla/node/edit/' + pagenodeid;
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
         }
     });
 
+    Xpress.command.register('createcontent', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/';
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
 
     Xpress.command.register('onestoptask', {
         exec: function (field, item, editor, params) {
-
             window.location = '/node/add/tasks?location=' + window.location; /* insert url here */
         },
         state: function (field, item, editor) {
@@ -152,7 +156,6 @@
     Xpress.command.register('onestopchecklist', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/checklists?location=' + window.location; /* insert url here */
-            //https://icat-stg.byu.edu/node/add/adaptive-content-image?render=references-dialog
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -190,7 +193,6 @@
     Xpress.command.register('admissions', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/admissions';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -200,7 +202,6 @@
     Xpress.command.register('financialaid', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/financial-aid';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -210,7 +211,6 @@
     Xpress.command.register('registrar', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/registrar';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -220,7 +220,6 @@
     Xpress.command.register('counseling', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/counseling';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -229,7 +228,6 @@
     Xpress.command.register('processing', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/processing';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -238,7 +236,6 @@
     Xpress.command.register('studentservices', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/student-services';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -248,7 +245,6 @@
     Xpress.command.register('executivedirector', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/executive-director';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -257,7 +253,6 @@
     Xpress.command.register('financialservices', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/financial-services';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -266,7 +261,6 @@
     Xpress.command.register('icat', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/icat';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -275,7 +269,6 @@
     Xpress.command.register('technologyapplications', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/technology-applications';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -284,7 +277,6 @@
     Xpress.command.register('treasuryservices', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/treasury-services';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -294,7 +286,6 @@
     Xpress.command.register('assessment', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/quiz';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -303,7 +294,6 @@
     Xpress.command.register('saasposition', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/saas-position';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;
@@ -312,7 +302,6 @@
     Xpress.command.register('newspost', {
         exec: function (field, item, editor, params) {
             window.location = '/node/add/training-news-post';
-
         },
         state: function (field, item, editor) {
             return Xpress.command.ENABLED;

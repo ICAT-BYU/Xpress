@@ -702,8 +702,22 @@ function xpress_xpress_toolbar() {
     global $theme_key;
     global $user;
 
+// -------------- ICAT BYU THEMED SITE ---------------------        
+    if ($theme_key === 'byu_icat') {
+        $icatbyubuttons = array();
+        $icatbyubuttons['content'] = array(
+            'title' => 'Create Content',
+            'description' => 'Create new Content',
+            'icon' => $path . 'content-insert-blue.png',
+            'command' => 'createcontent',
+            'field specific' => FALSE
+        );
+    if (!empty($icatbyubuttons)) {
+        $toReturn['quicklinks']['create content']['add'] = $icatbyubuttons;
+    }
+        
 // -------------- BYU ONESTOP SITE ---------------------        
-    if ($theme_key === 'onestop') {
+    } elseif ($theme_key === 'onestop') {
         $onestopbuttons = array();
         // checks if the user has permision to add content
         if (node_access('create', 'tasks', $user)) {
