@@ -713,7 +713,7 @@ function xpress_xpress_toolbar() {
             'field specific' => FALSE
         );
     if (!empty($icatbyubuttons)) {
-        $toReturn['quicklinks']['create content']['add'] = $icatbyubuttons;
+        $toReturn['quicklinks']['create content byuicat']['items'] = $icatbyubuttons;
     }
         
 // -------------- BYU ONESTOP SITE ---------------------        
