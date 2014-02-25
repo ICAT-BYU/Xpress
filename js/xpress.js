@@ -96,6 +96,14 @@
             element = editor.element;
         
         editor.config.extraPlugins = 'justify';
+        
+        editor.config.extraPlugins = 'menu';
+        editor.config.extraPlugins = 'panel';
+        editor.config.extraPlugins = 'floatpanel';
+        editor.config.extraPlugins = 'dialogui';
+        editor.config.extraPlugins = 'contextment';
+        editor.config.extraPlugins = 'liststyle';
+        
         editor.config.justifyClasses = [ 'rteleft', 'rtecenter', 'rteright', 'rtejustify' ];
         editor.config.allowedContent = true;
 
