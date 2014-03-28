@@ -282,6 +282,14 @@
             return Xpress.command.ENABLED;
         }
     });
+    Xpress.command.register('advisementcenter', {
+        exec: function (field, item, editor, params) {
+            window.location = '/node/add/advisement';
+        },
+        state: function (field, item, editor) {
+            return Xpress.command.ENABLED;
+        }
+    });
     // -------------------- TRAINING MISC ----------------------------
     Xpress.command.register('assessment', {
         exec: function (field, item, editor, params) {
