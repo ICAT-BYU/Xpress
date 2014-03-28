@@ -70,15 +70,11 @@ function xpress_block_view($block_name = '') {
         
         $url = $_SERVER['REQUEST_URI'];
         if (isset($_GET["edit"])) {
-            $newUrl = remove_querystring_var($url, "edit");
+            $newUrl = parse_url($url, PHP_URL_PATH);
             $buttonTxt = "Edit Off";
             $gearButton = "";
         } else {
-            if (strpos($url,"?") === false) {
-                $newUrl = $url . "?edit=1";
-            } else {
-                $newUrl = $url . "&edit=1";
-            }
+            $newUrl = parse_url($url, PHP_URL_PATH) . "?edit=1";
             $buttonTxt = "Edit On";
         }
         $editButton = $editButtonPre . "<a href='" . $newUrl . "'>" .$buttonTxt. "</a>" . "</div>";
@@ -108,12 +104,6 @@ function xpress_block_view($block_name = '') {
                         return $block;
         }
 
-}
-
-function remove_querystring_var($url, $key) { 
-	$url = preg_replace('/(.*)(\?|&)' . $key . '=[^&]+?(&)(.*)/i', '$1$2$4', $url . '&'); 
-	$url = substr($url, 0, -1); 
-	return $url; 
 }
 
 
@@ -233,7 +223,7 @@ function xpress_preprocess_page(&$vars, $hook) {
             'id' => (int) $vars['node']->nid,
             'entity' => 'node',
             'bundle' => $vars['node']->type,
-            'title' => $vars['node']->title,
+            'title' => str_replace("'", "", $vars['node']->title),
             'page' => TRUE,
             'field_name' => 'title',
             'field_label' => Xpress::getBundleTitleLabel($vars['node']->type),
@@ -722,9 +712,9 @@ function xpress_xpress_toolbar() {
             'command' => 'createcontent',
             'field specific' => FALSE
         );
-    if (!empty($icatbyubuttons)) {
-        $toReturn['quicklinks']['create content byuicat']['items'] = $icatbyubuttons;
-    }
+        if (!empty($icatbyubuttons)) {
+            $toReturn['quicklinks']['create content']['add'] = $icatbyubuttons;
+        }
         
 // -------------- BYU ONESTOP SITE ---------------------        
     } elseif ($theme_key === 'onestop') {
@@ -886,6 +876,15 @@ function xpress_xpress_toolbar() {
                 'description' => 'Create new Treasury Services Topic Page',
                 'icon' => $path . 'button-treasuryservices.png',
                 'command' => 'treasuryservices',
+                'field specific' => FALSE
+            );
+        }
+        if (node_access('create', 'advisement', $user)) {
+            $trainingbuttonsOT['advisement'] = array(
+                'title' => 'Create Advisement Center Topic Page',
+                'description' => 'Create new Advisement Center Topic Page',
+                'icon' => $path . 'button-advisementcenter.png',
+                'command' => 'advisementcenter',
                 'field specific' => FALSE
             );
         }
